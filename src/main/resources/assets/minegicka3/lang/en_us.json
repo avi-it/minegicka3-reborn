@@ -1,0 +1,16 @@
+{
+	"itemGroup.minegicka3": "Minegicka III",
+	"key.category.minegicka3.minegicka3": "Minegicka III",
+	"key.minegicka3.water": "Element: Water",
+	"key.minegicka3.life": "Element: Life",
+	"key.minegicka3.shield": "Element: Shield",
+	"key.minegicka3.cold": "Element: Cold",
+	"key.minegicka3.lightning": "Element: Lightning",
+	"key.minegicka3.arcane": "Element: Arcane",
+	"key.minegicka3.earth": "Element: Earth",
+	"key.minegicka3.fire": "Element: Fire",
+	"key.minegicka3.utility": "Cast Magick / Clear Queue (sneak)",
+	"item.minegicka3.staff": "Staff",
+	"item.minegicka3.staff_grand": "Grand Staff",
+	"item.minegicka3.staff_super": "Super Staff"
+}

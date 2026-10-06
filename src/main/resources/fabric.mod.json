@@ -1,0 +1,22 @@
+{
+	"schemaVersion": 1,
+	"id": "minegicka3",
+	"version": "${version}",
+	"name": "Minegicka III Reborn",
+	"description": "Unofficial reimplementation of Minegicka III (originally by WilliamEze, MC 1.7.10) for modern Minecraft: queue up to 5 of 8 elements and cast combined spells.",
+	"authors": ["avi"],
+	"contributors": ["WilliamEze (original Minegicka III design)"],
+	"license": "All-Rights-Reserved",
+	"environment": "*",
+	"entrypoints": {
+		"main": ["ro.avi.minegicka3.Minegicka"],
+		"client": ["ro.avi.minegicka3.client.MinegickaClient"],
+		"fabric-gametest": ["ro.avi.minegicka3.test.SpellGameTests"]
+	},
+	"depends": {
+		"fabricloader": ">=0.19.0",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
