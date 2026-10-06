@@ -1,0 +1,17 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:thingy",
+		"minecraft:ice",
+		"minecraft:ice",
+		"minecraft:ice",
+		"minecraft:arrow",
+		"minecraft:arrow",
+		"minecraft:arrow"
+	],
+	"result": {
+		"id": "minegicka3:ice_essence",
+		"count": 1
+	}
+}

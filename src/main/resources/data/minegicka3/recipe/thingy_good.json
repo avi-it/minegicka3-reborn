@@ -1,0 +1,19 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:thingy",
+		"minegicka3:thingy",
+		"minegicka3:thingy",
+		"minegicka3:thingy",
+		"minegicka3:thingy",
+		"minegicka3:thingy",
+		"minegicka3:thingy",
+		"minegicka3:thingy",
+		"minegicka3:thingy"
+	],
+	"result": {
+		"id": "minegicka3:thingy_good",
+		"count": 1
+	}
+}

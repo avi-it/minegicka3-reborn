@@ -1,0 +1,19 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:thingy_great",
+		"minegicka3:arcane_essence",
+		"minegicka3:cold_essence",
+		"minegicka3:earth_essence",
+		"minegicka3:fire_essence",
+		"minegicka3:life_essence",
+		"minegicka3:lightning_essence",
+		"minegicka3:shield_essence",
+		"minegicka3:water_essence"
+	],
+	"result": {
+		"id": "minegicka3:resistance_essence",
+		"count": 1
+	}
+}

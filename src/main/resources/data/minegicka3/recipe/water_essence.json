@@ -1,0 +1,15 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:thingy",
+		"minecraft:glass_bottle",
+		"minecraft:glass_bottle",
+		"minecraft:glass_bottle",
+		"minecraft:water_bucket"
+	],
+	"result": {
+		"id": "minegicka3:water_essence",
+		"count": 1
+	}
+}

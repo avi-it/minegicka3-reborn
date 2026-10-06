@@ -229,6 +229,47 @@ public class SpellGameTests {
 		h.succeedWhen(() -> check(h, t.getHealth() < hp, "icicles did not hurt target"));
 	}
 
+	@GameTest(maxTicks = 20)
+	public void magickComboMatch(GameTestHelper h) {
+		var m = ro.avi.minegicka3.magick.Magick.match(List.of(Element.ICE, Element.ARCANE, Element.ICE, Element.SHIELD, Element.ICE));
+		check(h, m == ro.avi.minegicka3.magick.Magicks.VORTEX, "IAIDI should be Vortex: " + m);
+		check(h, ro.avi.minegicka3.magick.Magick.ALL.size() == 16, "expected 16 magicks");
+		h.succeed();
+	}
+
+	@GameTest(maxTicks = 20)
+	public void hasteAndFreeze(GameTestHelper h) {
+		Player p = h.makeMockPlayer(GameType.CREATIVE);
+		p.snapTo(h.absoluteVec(new Vec3(1.5, 2, 4.5)), -90, 0);
+		Mob t = target(h, 4.5);
+		t.setDeltaMovement(0, 1, 0);
+		var ctx = new ro.avi.minegicka3.magick.MagickContext(h.getLevel(), p, ro.avi.minegicka3.spell.StaffStats.DEFAULT);
+		ro.avi.minegicka3.magick.Magicks.cast(ro.avi.minegicka3.magick.Magicks.HASTE, ctx);
+		ro.avi.minegicka3.magick.Magicks.cast(ro.avi.minegicka3.magick.Magicks.FREEZE_MOTION, ctx);
+		check(h, p.hasEffect(net.minecraft.world.effect.MobEffects.SPEED), "haste gave no speed");
+		check(h, t.hasEffect(net.minecraft.world.effect.MobEffects.SLOWNESS), "freeze motion did not slow");
+		h.succeed();
+	}
+
+	@GameTest(maxTicks = 20)
+	public void recipesLoaded(GameTestHelper h) {
+		var rm = h.getLevel().getServer().getRecipeManager();
+		for (String r : List.of("staff", "staff_super", "thingy", "fire_essence", "hat")) {
+			var key = net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.RECIPE, ro.avi.minegicka3.Minegicka.id(r));
+			check(h, rm.byKey(key).isPresent(), "missing recipe " + r);
+		}
+		h.succeed();
+	}
+
+	@GameTest(maxTicks = 20)
+	public void manaAppleRaisesMax(GameTestHelper h) {
+		Player p = h.makeMockPlayer(GameType.SURVIVAL);
+		double before = Mana.max(p);
+		Mana.raiseMax(p, 100);
+		check(h, Mana.max(p) == before + 100, "max mana not raised");
+		h.succeed();
+	}
+
 	@GameTest(maxTicks = 60)
 	public void arcaneNova(GameTestHelper h) {
 		Mob c = caster(h);

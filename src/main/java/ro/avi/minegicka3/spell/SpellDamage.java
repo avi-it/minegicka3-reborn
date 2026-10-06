@@ -101,6 +101,18 @@ public final class SpellDamage {
 			dArcane = t;
 		}
 
+		if (e instanceof net.minecraft.world.entity.player.Player pl
+			&& pl.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).getItem() instanceof ro.avi.minegicka3.item.SimpleItems.Hat hat) {
+			dWater *= hat.all;
+			dFire *= hat.all;
+			dArcane *= hat.all;
+			dLightning *= hat.all;
+			dEarth *= hat.all;
+			dIce *= hat.all;
+			dCold *= hat.all;
+			dSteam *= hat.all;
+			heal *= hat.life;
+		}
 		ServerLevel level = s.level();
 		double total = (dWater + dFire + dArcane + dLightning + dEarth + dIce + dCold + dSteam) * s.staff.power() * scale;
 		if (total > 0 && (e != s.owner || s.cast == CastType.SELF)) {

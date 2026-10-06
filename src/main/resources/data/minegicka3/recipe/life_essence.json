@@ -1,0 +1,18 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:thingy",
+		"minecraft:bone",
+		"minecraft:bone",
+		"minecraft:bone",
+		"minecraft:wheat_seeds",
+		"minecraft:wheat_seeds",
+		"minecraft:wheat_seeds",
+		"minecraft:cake"
+	],
+	"result": {
+		"id": "minegicka3:life_essence",
+		"count": 1
+	}
+}

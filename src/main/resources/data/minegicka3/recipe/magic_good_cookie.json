@@ -1,0 +1,15 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minecraft:cookie",
+		"minecraft:cookie",
+		"minecraft:cookie",
+		"minecraft:cookie",
+		"minegicka3:thingy_good"
+	],
+	"result": {
+		"id": "minegicka3:magic_good_cookie",
+		"count": 4
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:thingy",
+		"minecraft:iron_ingot",
+		"minecraft:iron_ingot",
+		"minecraft:iron_ingot",
+		"minecraft:iron_ingot",
+		"minecraft:flint",
+		"minecraft:flint"
+	],
+	"result": {
+		"id": "minegicka3:lightning_essence",
+		"count": 1
+	}
+}

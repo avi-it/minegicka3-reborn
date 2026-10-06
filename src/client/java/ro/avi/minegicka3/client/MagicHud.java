@@ -54,7 +54,7 @@ public class MagicHud implements HudElement {
 		y -= 5 + 2;
 		int bx = left + (W - 80) / 2;
 		float ba = 0.4f + 0.6f * f;
-		double rate = Mana.get(p) / Mana.MAX;
+		double rate = Mana.get(p) / Mana.max(p);
 		g.fill(bx, y, bx + 80, y + 5, argb(ba, 0x333333));
 		g.fill(bx + 1, y + 1, bx + 79, y + 4, argb(ba, 0x000000));
 		int fw = (int)Math.round(78 * rate);
@@ -63,7 +63,7 @@ public class MagicHud implements HudElement {
 			: rgb(0.7, 0.7 * Math.max(0, 0.7 - rate), 0.8 * rate);
 		g.fill(cx - fw / 2, y + 1, cx - fw / 2 + fw, y + 4, argb(ba, col));
 		if (staff) {
-			String t = (int)Math.ceil(Mana.get(p)) + "/" + (int)Mana.MAX;
+			String t = (int)Math.ceil(Mana.get(p)) + "/" + (int)Math.ceil(Mana.max(p));
 			g.text(font, t, cx - font.width(t) / 2, y - 9, argb(1f, 0xFFFFFF), true);
 		}
 
@@ -79,6 +79,11 @@ public class MagicHud implements HudElement {
 			int qx = left + (r.slot() % 5) * (Q + GAP) + (Q - size) / 2;
 			int qy = y + (r.slot() / 5) * (Q + GAP) - (int)(Q * t) + (Q - size) / 2;
 			tile(g, null, r.element(), qx, qy, size, f * (1 - t));
+		}
+		ro.avi.minegicka3.magick.Magick m = ro.avi.minegicka3.magick.Magick.match(ElementQueue.QUEUE);
+		if (m != null && staff) {
+			String name = m.name() + " (R)";
+			g.text(font, name, right - font.width(name), y - 10, argb(f, 0xFFE070), true);
 		}
 		for (int k = 0; k < n; k++) {
 			tile(g, font, ElementQueue.QUEUE.get(k), left + (k % 5) * (Q + GAP), y + (k / 5) * (Q + GAP), Q, f);

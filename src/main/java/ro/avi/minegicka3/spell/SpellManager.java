@@ -68,8 +68,9 @@ public final class SpellManager {
 	public static void tick(MinecraftServer server) {
 		for (ServerPlayer p : server.getPlayerList().getPlayers()) {
 			if (p.isDeadOrDying()) continue;
+			if (CHANNELLED.containsKey(p.getUUID())) continue; // no regen while casting
 			double mana = Mana.get(p);
-			if (mana < Mana.MAX) Mana.set(p, mana + Mana.REGEN * staffOf(p).recover());
+			if (mana < Mana.max(p)) Mana.set(p, mana + Mana.REGEN * staffOf(p).recover());
 		}
 		Iterator<Map.Entry<UUID, Spell>> it = CHANNELLED.entrySet().iterator();
 		while (it.hasNext()) {

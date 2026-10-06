@@ -1,0 +1,19 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:staff",
+		"minegicka3:life_essence",
+		"minegicka3:life_essence",
+		"minecraft:ghast_tear",
+		"minecraft:glistering_melon_slice",
+		"minecraft:golden_carrot",
+		"minecraft:glowstone_dust",
+		"minecraft:redstone",
+		"minecraft:pufferfish"
+	],
+	"result": {
+		"id": "minegicka3:staff_blessing",
+		"count": 1
+	}
+}

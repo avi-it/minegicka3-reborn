@@ -1,0 +1,17 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:thingy",
+		"minecraft:flint_and_steel",
+		"minecraft:flint_and_steel",
+		"minecraft:snowball",
+		"minecraft:snowball",
+		"minecraft:snowball",
+		"minecraft:snowball"
+	],
+	"result": {
+		"id": "minegicka3:steam_essence",
+		"count": 1
+	}
+}

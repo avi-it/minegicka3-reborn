@@ -1,0 +1,13 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:thingy",
+		"minegicka3:thingy",
+		"minecraft:stick"
+	],
+	"result": {
+		"id": "minegicka3:stick",
+		"count": 1
+	}
+}

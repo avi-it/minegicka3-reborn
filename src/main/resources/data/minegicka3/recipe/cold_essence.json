@@ -1,0 +1,19 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:thingy",
+		"minecraft:snowball",
+		"minecraft:snowball",
+		"minecraft:snowball",
+		"minecraft:snowball",
+		"minecraft:snowball",
+		"minecraft:snowball",
+		"minecraft:snowball",
+		"minecraft:snowball"
+	],
+	"result": {
+		"id": "minegicka3:cold_essence",
+		"count": 1
+	}
+}

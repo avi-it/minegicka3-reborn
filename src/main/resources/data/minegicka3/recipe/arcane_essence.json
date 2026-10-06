@@ -1,0 +1,16 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:thingy",
+		"minecraft:blaze_rod",
+		"minecraft:fermented_spider_eye",
+		"minecraft:fermented_spider_eye",
+		"minecraft:nether_wart",
+		"minecraft:nether_wart"
+	],
+	"result": {
+		"id": "minegicka3:arcane_essence",
+		"count": 1
+	}
+}

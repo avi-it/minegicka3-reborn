@@ -98,7 +98,12 @@ public class MinegickaClient implements ClientModInitializer {
 					ElementQueue.clear();
 				}
 			}
-			if (p.isUsingItem() && !ElementQueue.QUEUE.isEmpty()) {
+			while (ElementQueue.QUEUE.size() > ElementQueue.maxSize()) ElementQueue.QUEUE.removeLast();
+			if (p.isUsingItem() && ElementQueue.QUEUE.isEmpty()) {
+				// empty queue: the staff's own active ability (if any)
+				casting = true;
+				ClientPlayNetworking.send(new CastPayload(CastPayload.START, new byte[0], 0));
+			} else if (p.isUsingItem()) {
 				startCast(p, p.isShiftKeyDown() ? CastType.AREA : CastType.SINGLE);
 			} else if (!guiOpen && mc.options.keyAttack.isDown() && !ElementQueue.QUEUE.isEmpty()) {
 				selfCasting = true;

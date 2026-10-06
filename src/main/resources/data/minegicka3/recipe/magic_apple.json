@@ -1,0 +1,12 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minecraft:apple",
+		"minegicka3:thingy"
+	],
+	"result": {
+		"id": "minegicka3:magic_apple",
+		"count": 1
+	}
+}

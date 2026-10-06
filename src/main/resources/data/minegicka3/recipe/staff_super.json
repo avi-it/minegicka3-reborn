@@ -1,0 +1,19 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:stick",
+		"minegicka3:stick",
+		"minegicka3:stick_great",
+		"minegicka3:stick_great",
+		"minegicka3:stick_great",
+		"minegicka3:thingy_great",
+		"minecraft:red_dye",
+		"minecraft:red_dye",
+		"minecraft:red_dye"
+	],
+	"result": {
+		"id": "minegicka3:staff_super",
+		"count": 1
+	}
+}

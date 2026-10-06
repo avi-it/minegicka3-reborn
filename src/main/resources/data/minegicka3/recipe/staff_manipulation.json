@@ -1,0 +1,18 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:staff",
+		"minegicka3:arcane_essence",
+		"minegicka3:life_essence",
+		"minecraft:golden_carrot",
+		"minecraft:fermented_spider_eye",
+		"minecraft:redstone",
+		"minecraft:rotten_flesh",
+		"minecraft:rotten_flesh"
+	],
+	"result": {
+		"id": "minegicka3:staff_manipulation",
+		"count": 1
+	}
+}

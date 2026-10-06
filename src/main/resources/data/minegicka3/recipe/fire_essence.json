@@ -1,0 +1,15 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:thingy",
+		"minecraft:flint_and_steel",
+		"minecraft:blaze_rod",
+		"minecraft:magma_cream",
+		"minecraft:magma_cream"
+	],
+	"result": {
+		"id": "minegicka3:fire_essence",
+		"count": 1
+	}
+}

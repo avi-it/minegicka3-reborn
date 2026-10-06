@@ -71,8 +71,8 @@ public class MagicEntityRenderer extends EntityRenderer<MagicEntity, MagicEntity
 		boolean mine = s.look == MagicEntity.LOOK_ARCANE || s.look == MagicEntity.LOOK_LIFE;
 		if (mine) sz *= 0.5f;
 		pose.translate(0, s.size / 2, 0);
-		pose.mulPose(Axis.YP.rotationDegrees(s.spin + s.id * 37));
-		if (!mine) pose.mulPose(Axis.XP.rotationDegrees(s.spin * 0.7f));
+		pose.rotateDegrees(Axis.YP, s.spin + s.id * 37);
+		if (!mine) pose.rotateDegrees(Axis.XP, s.spin * 0.7f);
 		if (s.look == MagicEntity.LOOK_ICE && !mine) pose.scale(sz * 0.6f, sz * 0.6f, sz * 2.2f);
 		else pose.scale(sz, sz, sz);
 		pose.translate(-0.5, -0.5, -0.5);

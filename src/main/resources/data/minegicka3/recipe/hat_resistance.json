@@ -1,0 +1,12 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:hat",
+		"minegicka3:resistance_essence"
+	],
+	"result": {
+		"id": "minegicka3:hat_resistance",
+		"count": 1
+	}
+}

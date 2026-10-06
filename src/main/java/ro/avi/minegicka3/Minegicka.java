@@ -37,6 +37,7 @@ public class Minegicka implements ModInitializer {
 		ro.avi.minegicka3.block.ModBlocks.init();
 		ro.avi.minegicka3.entity.ModEntities.init();
 		ModItems.init();
+		ro.avi.minegicka3.magick.Magicks.init();
 
 		PayloadTypeRegistry.serverboundPlay().register(CastPayload.TYPE, CastPayload.CODEC);
 		PayloadTypeRegistry.clientboundPlay().register(SprayFxPayload.TYPE, SprayFxPayload.CODEC);
@@ -57,7 +58,18 @@ public class Minegicka implements ModInitializer {
 		List<Element> els = new ArrayList<>();
 		for (byte b : msg.elements()) {
 			Element e = Element.byId(b);
-			if (e != null && els.size() < MAX_ELEMENTS) els.add(e);
+			if (e != null && els.size() < 16) els.add(e);
+		}
+		if (msg.action() == CastPayload.MAGICK) {
+			ro.avi.minegicka3.magick.Magick m = ro.avi.minegicka3.magick.Magick.match(els);
+			if (m != null) {
+				ro.avi.minegicka3.magick.Magicks.cast(m, new ro.avi.minegicka3.magick.MagickContext(player.level(), player, SpellManager.staffOf(player)));
+			}
+			return;
+		}
+		if (msg.action() == CastPayload.START && els.isEmpty()) {
+			if (player.getMainHandItem().getItem() instanceof ro.avi.minegicka3.item.StaffItem staff) staff.triggerAbility(player.level(), player);
+			return;
 		}
 		if (msg.action() == CastPayload.START) {
 			CastType[] types = CastType.values();

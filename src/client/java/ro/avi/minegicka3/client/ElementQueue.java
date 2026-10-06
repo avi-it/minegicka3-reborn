@@ -18,7 +18,14 @@ public final class ElementQueue {
 	}
 
 	public static void push(Element e) {
-		Element.pushToQueue(QUEUE, e, Minegicka.MAX_ELEMENTS, (old, slot) -> REMOVED.add(new Removed(old, slot, System.currentTimeMillis())));
+		Element.pushToQueue(QUEUE, e, maxSize(), (old, slot) -> REMOVED.add(new Removed(old, slot, System.currentTimeMillis())));
+	}
+
+	/** Queue length allowed by the held staff (4 basic, 5 grand, 6 super, 13 Hemmy's Might). */
+	public static int maxSize() {
+		var p = net.minecraft.client.Minecraft.getInstance().player;
+		if (p != null && p.getMainHandItem().getItem() instanceof ro.avi.minegicka3.item.StaffItem s) return s.stats.queue();
+		return Minegicka.MAX_ELEMENTS;
 	}
 
 	public static void clear() {

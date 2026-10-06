@@ -68,6 +68,84 @@ def essence(col):
     return px
 
 
+def gem(col):
+    """Octahedron-looking diamond gem (Thingies)."""
+    px = [[(0, 0, 0, 0)] * 16 for _ in range(16)]
+    c = hexc(col)
+    for y in range(2, 14):
+        w = 6 - abs(y - 7.5) * 0.9
+        for x in range(16):
+            dx = x - 7.5
+            if abs(dx) <= w:
+                k = 1.25 if dx < 0 and y < 8 else 1.0 if dx < 0 else 0.8 if y < 8 else 0.6
+                px[y][x] = shade(c, k)
+    px[4][6] = (255, 255, 255, 230)
+    return px
+
+
+def rod(col, tip):
+    px = [[(0, 0, 0, 0)] * 16 for _ in range(16)]
+    c, t = hexc(col), hexc(tip)
+    for i in range(12):
+        x, y = 2 + i, 13 - i
+        px[y][x] = shade(c, 1.1)
+        px[y + 1][x] = shade(c, 0.7)
+    for (x, y) in [(13, 2), (14, 1), (13, 1), (14, 2)]:
+        px[y][x] = t
+    return px
+
+
+def apple(col, leaf=0x3C8C28):
+    px = [[(0, 0, 0, 0)] * 16 for _ in range(16)]
+    c = hexc(col)
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) ** 2 + ((y - 9) * 1.1) ** 2) ** 0.5
+            if d < 5.5:
+                px[y][x] = shade(c, 1.2 - d / 8)
+            elif d < 6.3:
+                px[y][x] = shade(c, 0.5)
+    for y in (2, 3):
+        px[y][8] = (90, 60, 30, 255)
+    px[2][9] = hexc(leaf)
+    px[2][10] = hexc(leaf)
+    px[6][5] = (255, 255, 255, 200)
+    return px
+
+
+def cookie(chip):
+    px = [[(0, 0, 0, 0)] * 16 for _ in range(16)]
+    base = hexc(0xC88A48)
+    for y in range(16):
+        for x in range(16):
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d < 6:
+                px[y][x] = shade(base, 1.1 - noise(x, y, 11) * 0.25)
+            elif d < 6.8:
+                px[y][x] = shade(base, 0.6)
+    for (x, y) in [(5, 5), (9, 4), (10, 9), (6, 10), (8, 7)]:
+        px[y][x] = hexc(chip)
+        px[y][x + 1] = shade(hexc(chip), 0.7)
+    return px
+
+
+def hat(col, band):
+    px = [[(0, 0, 0, 0)] * 16 for _ in range(16)]
+    c, b = hexc(col), hexc(band)
+    for y in range(1, 12):
+        w = (y - 1) * 0.45 + 0.5
+        for x in range(16):
+            if abs(x - 7.5 + (11 - y) * 0.15) <= w:
+                px[y][x] = shade(c, 1.15 if x < 8 else 0.85)
+    for x in range(1, 15):
+        px[12][x] = shade(c, 0.9)
+        px[13][x] = shade(c, 0.6)
+    for x in range(3, 13):
+        px[11][x] = b
+    px[5][7] = (255, 255, 160, 255)
+    return px
+
+
 def noise(x, y, seed):
     n = (x * 374761393 + y * 668265263 + seed * 2147483647) & 0xFFFFFFFF
     n = ((n ^ (n >> 13)) * 1274126177) & 0xFFFFFFFF
@@ -128,4 +206,21 @@ if __name__ == "__main__":
                       ("ice", 0x90FFFF), ("life", 0x00E000), ("lightning", 0xFF54FD), ("shield", 0xFFF638),
                       ("steam", 0xABABAB), ("water", 0x2529FF)]:
         png(os.path.join(OUT, name + "_essence.png"), essence(col))
+    png(os.path.join(OUT, "resistance_essence.png"), essence(0x40C080))
+    png(os.path.join(OUT, "thingy.png"), gem(0xFFE040))
+    png(os.path.join(OUT, "thingy_good.png"), gem(0x40E8FF))
+    png(os.path.join(OUT, "thingy_great.png"), gem(0xC050FF))
+    png(os.path.join(OUT, "stick.png"), rod(0x8A6A3A, 0xFFE040))
+    png(os.path.join(OUT, "stick_good.png"), rod(0x6A5A8A, 0x40E8FF))
+    png(os.path.join(OUT, "stick_great.png"), rod(0x3A2A5A, 0xC050FF))
+    png(os.path.join(OUT, "magic_apple.png"), apple(0xD02040))
+    png(os.path.join(OUT, "magic_golden_apple.png"), apple(0xF0C030))
+    png(os.path.join(OUT, "magic_great_apple.png"), apple(0xC060FF, leaf=0xFFE040))
+    png(os.path.join(OUT, "magic_cookie.png"), cookie(0x3060FF))
+    png(os.path.join(OUT, "magic_good_cookie.png"), cookie(0x30E0FF))
+    png(os.path.join(OUT, "magic_great_cookie.png"), cookie(0xD040FF))
+    png(os.path.join(OUT, "hat.png"), hat(0x3040A0, 0xFFD040))
+    png(os.path.join(OUT, "hat_risk.png"), hat(0xA02020, 0x202020))
+    png(os.path.join(OUT, "hat_resistance.png"), hat(0x208050, 0xE0E0E0))
+    png(os.path.join(OUT, "hat_immunity.png"), hat(0xF0F0F0, 0xFFD700))
     print("ok")

@@ -1,0 +1,17 @@
+{
+	"type": "minecraft:crafting_shapeless",
+	"category": "misc",
+	"ingredients": [
+		"minegicka3:thingy",
+		"minecraft:glowstone_dust",
+		"minecraft:glowstone_dust",
+		"minecraft:glowstone_dust",
+		"minecraft:glowstone_dust",
+		"minecraft:golden_apple",
+		"minecraft:iron_door"
+	],
+	"result": {
+		"id": "minegicka3:shield_essence",
+		"count": 1
+	}
+}

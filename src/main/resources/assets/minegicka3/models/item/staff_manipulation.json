@@ -1,0 +1,6 @@
+{
+	"parent": "minecraft:item/handheld",
+	"textures": {
+		"layer0": "minegicka3:item/staff_manipulation"
+	}
+}
