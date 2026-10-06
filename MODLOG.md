@@ -17,3 +17,11 @@
 2. `build genSources` in one Gradle call fails with implicit-dependency validation; run them separately.
 3. Test casters must aim at the target (eye height > pig height).
 4. Spray droplets must clip fluids (except fire) or cold spray never freezes water.
+
+## Status 2026-10-06 (v0.1.0)
+- Ported: all 10 elements + queue rules, 5 spell shapes x 3 cast types, mana (+max mana), HUD, 16 magicks, 8 staves
+  (5 abilities), 4 hats (damage modifiers, no on-head model), mana apples/cookies, essences, thingies, sticks, 33 recipes.
+- Verified: 19 GameTests pass (runGametest); dev client loads to title with no resource errors. Not yet driven in-game.
+- Not ported: Click-Craft station + staff enchanting GUIs, Magickpedia, unlock system, 888 boss + towers, Mage mob, dungeon loot.
+- Gotcha 5: Python edits on Windows must use encoding='utf-8' (cp1252 write of a non-ASCII char truncated a file).
+- Gotcha 6: 26.3 blocks have no codec(); PushReaction.IMMOVEABLE (not BLOCK); PoseStack.rotateDegrees(Axis, deg).
