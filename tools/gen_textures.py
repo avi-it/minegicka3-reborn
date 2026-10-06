@@ -1,5 +1,5 @@
 """Generates the mod's own 16x16 item textures (no third-party art). Run: python tools/gen_textures.py"""
-import os, struct, zlib
+import math, os, struct, zlib
 
 OUT = os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources", "assets", "minegicka3", "textures", "item")
 
@@ -187,34 +187,201 @@ def wall_block(base, light, dark, seed):
     return px
 
 
+# ---- HUD element icons -------------------------------------------------------------------------------------------
+# Each icon is a glossy rune stone: a dark iron rim, an element-coloured disc and a white glyph. Shapes are described
+# as point tests in a [-1, 1] square (y down) and rasterised with supersampling, so the art is pure code.
+
+def _in_poly(x, y, pts):
+    inside = False
+    j = len(pts) - 1
+    for i in range(len(pts)):
+        xi, yi = pts[i]
+        xj, yj = pts[j]
+        if (yi > y) != (yj > y) and x < (xj - xi) * (y - yi) / (yj - yi) + xi:
+            inside = not inside
+        j = i
+    return inside
+
+
+def _seg_dist(x, y, a, b):
+    ax, ay = a
+    bx, by = b
+    vx, vy = bx - ax, by - ay
+    t = max(0.0, min(1.0, ((x - ax) * vx + (y - ay) * vy) / (vx * vx + vy * vy)))
+    dx, dy = x - (ax + vx * t), y - (ay + vy * t)
+    return (dx * dx + dy * dy) ** 0.5
+
+
+def _rot(pts, deg, cx=0.0, cy=0.0):
+    a = math.radians(deg)
+    c, s = math.cos(a), math.sin(a)
+    return [(cx + (x - cx) * c - (y - cy) * s, cy + (x - cx) * s + (y - cy) * c) for x, y in pts]
+
+
+def _poly(pts):
+    return lambda x, y: _in_poly(x, y, pts)
+
+
+def _circle(cx, cy, r):
+    return lambda x, y: (x - cx) ** 2 + (y - cy) ** 2 < r * r
+
+
+def _strokes(segs, w):
+    return lambda x, y: any(_seg_dist(x, y, a, b) < w for a, b in segs)
+
+
+def _union(*fs):
+    return lambda x, y: any(f(x, y) for f in fs)
+
+
+def _minus(f, g):
+    return lambda x, y: f(x, y) and not g(x, y)
+
+
+WHITE = (255, 255, 255)
+
+
+def _glyph_arcane():
+    star = []
+    for i in range(8):
+        r = 0.42 if i % 2 == 0 else 0.11
+        a = math.radians(i * 45)
+        star.append((r * math.sin(a), -r * math.cos(a)))
+    ring = _minus(_circle(0, 0, 0.56), _circle(0, 0, 0.47))
+    return [(_union(ring, _poly(star)), WHITE)]
+
+
+def _glyph_cold():
+    segs = []
+    for k in range(6):
+        a = math.radians(k * 60)
+        dx, dy = math.sin(a), -math.cos(a)
+        segs.append(((0, 0), (0.6 * dx, 0.6 * dy)))
+        mx, my = 0.36 * dx, 0.36 * dy
+        for side in (-1, 1):
+            b = a + side * math.radians(45)
+            segs.append(((mx, my), (mx + 0.2 * math.sin(b), my - 0.2 * math.cos(b))))
+    return [(_strokes(segs, 0.065), WHITE)]
+
+
+def _glyph_earth():
+    rock = [(-0.55, 0.12), (-0.4, -0.3), (-0.05, -0.52), (0.38, -0.38), (0.58, 0.05), (0.42, 0.45), (-0.05, 0.55), (-0.42, 0.42)]
+    cracks = [((-0.05, -0.52), (0.02, -0.15)), ((0.02, -0.15), (-0.18, 0.12)), ((0.02, -0.15), (0.3, 0.08)),
+              ((-0.18, 0.12), (-0.1, 0.4))]
+    return [(_poly(rock), (236, 222, 196)), (_strokes(cracks, 0.04), (110, 78, 44))]
+
+
+def _glyph_fire():
+    outer = _union(_circle(0, 0.2, 0.4), _poly([(0.02, -0.68), (-0.39, 0.1), (0.39, 0.1)]),
+                   _poly([(0.33, -0.5), (0.16, -0.05), (0.4, 0.06)]), _poly([(-0.3, -0.32), (-0.38, 0.1), (-0.1, 0.0)]))
+    inner = _union(_circle(0, 0.3, 0.2), _poly([(0.0, -0.22), (-0.2, 0.25), (0.2, 0.25)]))
+    return [(outer, (255, 236, 150)), (inner, WHITE)]
+
+
+def _glyph_ice():
+    shard = [(0, -0.62), (0.16, -0.05), (0, 0.5), (-0.16, -0.05)]
+    small = [(0, -0.38), (0.11, 0.02), (0, 0.4), (-0.11, 0.02)]
+    left = _rot([(x - 0.3, y + 0.12) for x, y in small], -28, -0.3, 0.12)
+    right = _rot([(x + 0.3, y + 0.12) for x, y in small], 28, 0.3, 0.12)
+    return [(_union(_poly(shard), _poly(left), _poly(right)), WHITE)]
+
+
+def _glyph_life():
+    cross = lambda x, y: (abs(x) < 0.15 and abs(y) < 0.56) or (abs(y) < 0.15 and abs(x) < 0.56)
+    return [(cross, WHITE)]
+
+
+def _glyph_lightning():
+    bolt = [(0.18, -0.66), (-0.36, 0.08), (-0.04, 0.08), (-0.2, 0.66), (0.38, -0.14), (0.05, -0.14)]
+    return [(_poly(bolt), WHITE)]
+
+
+def _glyph_shield():
+    body = [(-0.46, -0.52), (0.46, -0.52), (0.46, 0.0)]
+    for i in range(1, 8):
+        t = i / 8 * math.pi / 2
+        body.append((0.46 * math.cos(t), 0.62 * math.sin(t)))
+    body += [(-0.46 * math.sin(i / 8 * math.pi / 2), 0.62 * math.cos(i / 8 * math.pi / 2)) for i in range(1, 8)]
+    body.append((-0.46, 0.0))
+    stripe = lambda x, y: abs(x) < 0.07 and -0.45 < y < 0.5
+    bar = lambda x, y: abs(y + 0.12) < 0.07 and abs(x) < 0.4
+    return [(_poly(body), WHITE), (_union(stripe, bar), (196, 150, 20))]
+
+
+def _glyph_steam():
+    segs = []
+    for cx in (-0.3, 0.0, 0.3):
+        pts = [(cx + 0.09 * math.sin(i / 10 * 2 * math.pi + cx * 4), 0.55 - i * 0.11) for i in range(11)]
+        segs += list(zip(pts, pts[1:]))
+    return [(_strokes(segs, 0.07), WHITE)]
+
+
+def _glyph_water():
+    drop = _union(_circle(0, 0.18, 0.4), _poly([(0, -0.66), (-0.36, 0.0), (0.36, 0.0)]))
+    shine = _minus(_circle(-0.12, 0.2, 0.22), _circle(-0.04, 0.12, 0.22))
+    return [(drop, WHITE), (shine, (120, 160, 255))]
+
+
+# order follows Element ordinals: ARCANE COLD EARTH FIRE ICE LIFE LIGHTNING SHIELD STEAM WATER
+ICONS = [(0xB0122A, _glyph_arcane), (0x7FA9DC, _glyph_cold), (0x7A5530, _glyph_earth), (0xE8540F, _glyph_fire),
+         (0x34B6D6, _glyph_ice), (0x2EA83A, _glyph_life), (0x9A3AD8, _glyph_lightning), (0xD8A818, _glyph_shield),
+         (0x7E868E, _glyph_steam), (0x2A50D8, _glyph_water)]
+
+
+def _icon_sample(x, y, base, layers):
+    """Colour (r, g, b, a) of one sample point; x, y in [-1, 1]."""
+    d = (x * x + y * y) ** 0.5
+    if d >= 0.97:
+        return None
+    if d >= 0.86:  # dark iron rim with a lit top edge
+        k = 0.35 + 0.35 * max(0.0, -y)
+        return (int(70 * k + 30), int(66 * k + 28), int(60 * k + 26))
+    if d >= 0.8:
+        return (24, 20, 18)
+    # disc: radial falloff, lighter towards the top
+    k = 1.15 - 0.55 * d - 0.18 * y
+    col = shade(base + (255,), k)[:3]
+    for test, glyph_col in layers:  # soft shadow first
+        if test(x - 0.05, y - 0.06):
+            col = tuple(int(c * 0.45) for c in col)
+            break
+    for test, glyph_col in layers:
+        if test(x, y):
+            col = glyph_col
+    if ((x + 0.15) / 0.55) ** 2 + ((y + 0.5) / 0.22) ** 2 < 1:  # gloss
+        col = tuple(min(255, int(c + (255 - c) * 0.35)) for c in col)
+    return col
+
+
 def element_sheet():
-    """HUD icon sheet, same layout as Minegicka's elements.png: 4 columns x 5 rows, cell index = ordinal*2 (+1 greyed)."""
-    cols = [0xD01818, 0xD8E8F8, 0x6B4A26, 0xFF6010, 0x60E0F0, 0x30C030, 0xC040E0, 0xF0D020, 0x9A9A9A, 0x2040F0]
-    cell = 64
+    """HUD icon sheet: 4 columns x 5 rows of 64px cells, cell index = ordinal*2 (+1 greyed)."""
+    cell, ss = 64, 3
     px = [[(0, 0, 0, 0)] * (cell * 4) for _ in range(cell * 5)]
-    for idx in range(20):
-        base = hexc(cols[idx // 2])
-        if idx % 2:
-            g = sum(base[:3]) // 3
-            base = (g, g, g, 255)
-        cx0, cy0 = (idx % 4) * cell, (idx // 4) * cell
-        for y in range(cell):
-            for x in range(cell):
-                dx, dy = x - 31.5, y - 31.5
-                d = (dx * dx + dy * dy) ** 0.5
-                if d < 25:
-                    k = 1.25 - d / 40 - (dy / 120)
-                    px[cy0 + y][cx0 + x] = shade(base, k)
-                elif d < 28:
-                    px[cy0 + y][cx0 + x] = (150, 120, 70, 255)
-                elif d < 31:
-                    px[cy0 + y][cx0 + x] = (20, 20, 20, 255)
-        # glossy highlight
-        for y in range(10, 20):
-            for x in range(20, 36):
-                if ((x - 28) / 9) ** 2 + ((y - 15) / 5) ** 2 < 1:
-                    c = px[cy0 + y][cx0 + x]
-                    px[cy0 + y][cx0 + x] = tuple(min(255, v + 60) for v in c[:3]) + (255,)
+    for ordinal, (base_hex, glyph) in enumerate(ICONS):
+        layers = glyph()
+        base = hexc(base_hex)[:3]
+        for grey in (0, 1):
+            idx = ordinal * 2 + grey
+            cx0, cy0 = (idx % 4) * cell, (idx // 4) * cell
+            for py in range(cell):
+                for pxl in range(cell):
+                    acc, hits = [0, 0, 0], 0
+                    for sy in range(ss):
+                        for sx in range(ss):
+                            x = ((pxl + (sx + 0.5) / ss) / cell) * 2 - 1
+                            y = ((py + (sy + 0.5) / ss) / cell) * 2 - 1
+                            c = _icon_sample(x, y, base, layers)
+                            if c is not None:
+                                hits += 1
+                                for i in range(3):
+                                    acc[i] += c[i]
+                    if not hits:
+                        continue
+                    r, g, b = (v // hits for v in acc)
+                    if grey:
+                        l = int((0.3 * r + 0.59 * g + 0.11 * b) * 0.6)
+                        r = g = b = l
+                    px[cy0 + py][cx0 + pxl] = (r, g, b, 255 * hits // (ss * ss))
     return px
 
 
