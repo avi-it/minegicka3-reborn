@@ -58,8 +58,8 @@ public class Minegicka implements ModInitializer {
 	private static final java.util.Map<java.util.UUID, Long> LAST_ABILITY = new java.util.HashMap<>();
 
 	/**
-	 * Handles a cast packet. The client is not trusted: spells need a staff in the main hand, the queue is rebuilt with
-	 * the same rules and size limit the client uses, weapon casts can't be requested and staff abilities are rate limited.
+	 * Handles a cast packet. The client is not trusted: spells need a staff in the main hand, the queue is capped to
+	 * the staff's size, weapon casts can't be requested and staff abilities are rate limited.
 	 */
 	private static void onCast(ServerPlayer player, CastPayload msg) {
 		if (msg.action() == CastPayload.STOP) {
@@ -75,7 +75,7 @@ public class Minegicka implements ModInitializer {
 			}
 			return;
 		}
-		if (msg.action() == CastPayload.START && els.isEmpty()) {
+		if (msg.action() == CastPayload.START && msg.elements().length == 0) {
 			long now = player.level().getGameTime();
 			Long last = LAST_ABILITY.get(player.getUUID());
 			if (last != null && now - last < ABILITY_COOLDOWN && now >= last) return;
@@ -83,7 +83,7 @@ public class Minegicka implements ModInitializer {
 			staff.triggerAbility(player.level(), player);
 			return;
 		}
-		if (msg.action() == CastPayload.START) {
+		if (msg.action() == CastPayload.START && !els.isEmpty()) {
 			CastType[] types = CastType.values();
 			int t = msg.castType();
 			// WEAPON is only used internally (imbued weapons), never asked for by a client
@@ -92,13 +92,17 @@ public class Minegicka implements ModInitializer {
 		}
 	}
 
-	/** Replays the sent elements through the queue rules, so the result is a queue a real client could have built. */
+	/**
+	 * Checks the queue a client sent. It is the client's final queue, not its key presses, so it can't be replayed
+	 * through the queue rules (a break-down leaves pairs such as WATER next to LIGHTNING). Only what holds for every
+	 * real queue is enforced: known elements, at most max of them, at most one Shield.
+	 */
 	public static List<Element> sanitize(byte[] sent, int max) {
 		List<Element> els = new ArrayList<>();
-		for (int i = 0; i < sent.length && i < 64; i++) {
+		for (int i = 0; i < sent.length && els.size() < max; i++) {
 			Element e = Element.byId(sent[i]);
-			if (e != null) Element.pushToQueue(els, e, max, (old, slot) -> {
-			});
+			if (e == null || e == Element.SHIELD && els.contains(Element.SHIELD)) continue;
+			els.add(e);
 		}
 		return els;
 	}

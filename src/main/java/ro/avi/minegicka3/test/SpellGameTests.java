@@ -300,18 +300,20 @@ public class SpellGameTests {
 	}
 
 	@GameTest(maxTicks = 20)
-	public void forgedQueueIsRebuilt(GameTestHelper h) {
-		// 16 elements, opposites side by side and 9 different ones: nothing a real client could send
+	public void sentQueueIsChecked(GameTestHelper h) {
+		// 16 elements with several Shields: nothing a real client could send
 		byte[] forged = new byte[16];
 		for (int i = 0; i < forged.length; i++) forged[i] = (byte)(i % 10);
-		List<Element> q = ro.avi.minegicka3.Minegicka.sanitize(forged, 5);
-		check(h, q.size() <= 5, "queue longer than the staff allows: " + q);
-		List<Element> again = new ArrayList<>(q);
-		for (Element e : q) check(h, again.stream().filter(x -> x.isOpposite(e)).count() == (e == Element.SHIELD ? 1 : 0),
-			"opposites left in the queue: " + q);
-		byte[] valid = {(byte)Element.FIRE.ordinal(), (byte)Element.FIRE.ordinal(), (byte)Element.ARCANE.ordinal()};
-		check(h, ro.avi.minegicka3.Minegicka.sanitize(valid, 5).equals(List.of(Element.FIRE, Element.FIRE, Element.ARCANE)),
-			"a valid queue must survive unchanged");
+		List<Element> q = ro.avi.minegicka3.Minegicka.sanitize(forged, 13);
+		check(h, q.size() <= 13, "queue longer than the staff allows: " + q);
+		check(h, q.stream().filter(e -> e == Element.SHIELD).count() <= 1, "more than one shield: " + q);
+		// real final queues left by a break-down must survive unchanged
+		for (List<Element> real : List.of(List.of(Element.WATER, Element.COLD), List.of(Element.WATER, Element.LIGHTNING),
+			List.of(Element.FIRE, Element.FIRE, Element.ARCANE))) {
+			byte[] b = new byte[real.size()];
+			for (int i = 0; i < b.length; i++) b[i] = (byte)real.get(i).ordinal();
+			check(h, ro.avi.minegicka3.Minegicka.sanitize(b, 5).equals(real), "a real queue was changed: " + real);
+		}
 		h.succeed();
 	}
 
