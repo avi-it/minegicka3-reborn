@@ -97,13 +97,16 @@ class Model:
         self.box(c, (s * 0.92, s * 0.92, s * 0.92), darker(rgb, 0.1), (0, 45, 45))
 
     def hoop(self, c, radius, axis, w, rgb, n=14, tilt=0.0):
-        """Ring of n rod segments around c. axis 'x', 'y' or 'z' is the ring's normal; tilt leans it about Z."""
+        """Ring of n rod segments around c. axis 'x', 'y' or 'z' is the ring's normal; tilt (degrees) leans it."""
         pts = []
         for i in range(n + 1):
             t = 2 * math.pi * i / n
             u, v = radius * math.cos(t), radius * math.sin(t)
             p = {"y": (u, 0, v), "x": (0, u, v), "z": (u, v, 0)}[axis]
-            if tilt:
+            if tilt and axis == "z":  # lean towards the viewer: rotate about X
+                a = math.radians(tilt)
+                p = (p[0], p[1] * math.cos(a) - p[2] * math.sin(a), p[1] * math.sin(a) + p[2] * math.cos(a))
+            elif tilt:  # rotate about Z
                 a = math.radians(tilt)
                 p = (p[0] * math.cos(a) - p[1] * math.sin(a), p[0] * math.sin(a) + p[1] * math.cos(a), p[2])
             pts.append(tuple(c[k] + p[k] for k in range(3)))

@@ -47,7 +47,7 @@ public final class ClientFx {
 				if (eye != null && eye.distanceToSqr(at) < 2.25) continue; // keep the caster's own view clear
 				level.addParticle(sprayParticle(s.element, rnd, life), at.x, at.y, at.z, 0, 0, 0);
 			}
-			if (s.touching && rnd.nextInt(3) == 0) splash(level, rnd, s.element, s.pos);
+			if (s.touching && rnd.nextInt(3) == 0 && (eye == null || eye.distanceToSqr(s.pos) >= 2.25)) splash(level, rnd, s.element, s.pos);
 		}
 		SPRAYS.removeIf(s -> s.dead);
 	}
@@ -77,74 +77,80 @@ public final class ClientFx {
 		}
 	}
 
+	/** Particles one LineFxPayload may spawn per tick, shared fairly between its segments. */
+	private static final int BUDGET = 260;
+
 	public static void onLines(LineFxPayload p) {
 		ClientLevel level = Minecraft.getInstance().level;
 		if (level == null || p.colors().isEmpty()) return;
 		RandomSource rnd = level.getRandom();
 		List<Vec3> pts = p.points();
 		List<Integer> colors = p.colors();
-		int budget = 260;
-		for (int i = 0; i + 1 < pts.size() && budget > 0; i += 2) {
+		int segments = pts.size() / 2;
+		if (segments == 0) return;
+		int share = Math.max(5, BUDGET / segments);
+		double ringLength = 0;
+		for (int i = 0; i + 1 < pts.size(); i += 2) ringLength += pts.get(i).distanceTo(pts.get(i + 1));
+		for (int i = 0; i + 1 < pts.size(); i += 2) {
 			Vec3 a = pts.get(i), b = pts.get(i + 1);
+			boolean last = i / 2 == segments - 1;
 			if (p.kind() == LineFxPayload.LIGHTNING) {
-				budget -= arc(level, rnd, a, b, colors, budget > 120);
+				arc(level, rnd, a, b, colors, share);
 			} else if (p.kind() == LineFxPayload.NOVA) {
-				budget -= ring(level, rnd, a, b, colors, budget);
+				// one sample spacing for the whole ring, so every segment of a big nova gets drawn
+				ring(level, rnd, a, b, colors, Math.max(0.3, ringLength / BUDGET));
 			} else {
 				// a beam from the local player's own staff starts a bit ahead so it doesn't cover the screen
-				double start = pts.size() == 2 && near(a) ? Math.min(1.5, a.distanceTo(b)) : 0;
-				budget -= beam(level, rnd, a, b, colors, start, budget, i + 2 >= pts.size());
+				double start = segments == 1 && near(a) ? Math.min(1.5, a.distanceTo(b)) : 0;
+				beam(level, rnd, a, b, colors, start, last ? share - 4 : share, last);
 			}
 		}
 	}
 
 	/**
 	 * A beam is a bright, almost white core wrapped in two strands of the element colours that twist along it,
-	 * with a flare where it hits (only on the last segment, flare = true).
+	 * with a flare where it hits (only on the last segment, flare = true). Spawns at most budget particles plus the flare's 4.
 	 */
-	private static int beam(ClientLevel level, RandomSource rnd, Vec3 a, Vec3 b, List<Integer> colors, double start, int budget,
+	private static void beam(ClientLevel level, RandomSource rnd, Vec3 a, Vec3 b, List<Integer> colors, double start, int budget,
 		boolean flare) {
 		double len = a.distanceTo(b);
-		if (len < 1e-3) return 0;
-		Vec3 axis = b.subtract(a).scale(1 / len);
-		Vec3 u = axis.cross(Math.abs(axis.y) > 0.95 ? new Vec3(1, 0, 0) : new Vec3(0, 1, 0)).normalize();
-		Vec3 v = axis.cross(u);
-		int core = mix(average(colors), 0xFFFFFF, 0.6f);
-		double step = Math.max(0.3, len / Math.max(1, budget / 3));
-		double phase = level.getGameTime() * 0.6;
-		int n = 0;
-		for (double d = start; d <= len && n + 3 <= budget; d += step) {
-			Vec3 at = a.add(axis.scale(d));
-			level.addParticle(new DustParticleOptions(core, 0.7f), at.x, at.y, at.z, 0, 0, 0);
-			for (int strand = 0; strand < 2; strand++) {
-				double t = d * 2.2 + phase + strand * Math.PI;
-				Vec3 off = u.scale(Math.cos(t) * 0.2).add(v.scale(Math.sin(t) * 0.2));
-				int col = colors.get((strand + (int)(d * 2)) % colors.size());
-				level.addParticle(new DustParticleOptions(col, 1.0f), at.x + off.x, at.y + off.y, at.z + off.z, 0, 0, 0);
+		if (len >= 1e-3) {
+			Vec3 axis = b.subtract(a).scale(1 / len);
+			Vec3 u = axis.cross(Math.abs(axis.y) > 0.95 ? new Vec3(1, 0, 0) : new Vec3(0, 1, 0)).normalize();
+			Vec3 v = axis.cross(u);
+			int core = mix(average(colors), 0xFFFFFF, 0.6f);
+			double step = Math.max(0.3, len / Math.max(1, budget / 3));
+			double phase = level.getGameTime() * 0.6;
+			int n = 0;
+			for (double d = start; d <= len && n + 3 <= budget; d += step) {
+				Vec3 at = a.add(axis.scale(d));
+				level.addParticle(new DustParticleOptions(core, 0.7f), at.x, at.y, at.z, 0, 0, 0);
+				for (int strand = 0; strand < 2; strand++) {
+					double t = d * 2.2 + phase + strand * Math.PI;
+					Vec3 off = u.scale(Math.cos(t) * 0.2).add(v.scale(Math.sin(t) * 0.2));
+					int col = colors.get((strand + (int)(d * 2)) % colors.size());
+					level.addParticle(new DustParticleOptions(col, 1.0f), at.x + off.x, at.y + off.y, at.z + off.z, 0, 0, 0);
+				}
+				n += 3;
 			}
-			n += 3;
 		}
-		if (!flare) return n;
+		if (!flare) return;
 		level.addParticle(ParticleTypes.END_ROD, b.x, b.y, b.z, 0, 0.02, 0);
 		for (int k = 0; k < 3; k++) {
 			level.addParticle(new DustParticleOptions(colors.get(rnd.nextInt(colors.size())), 1.4f),
 				b.x + (rnd.nextDouble() - 0.5) * 0.5, b.y + (rnd.nextDouble() - 0.5) * 0.5, b.z + (rnd.nextDouble() - 0.5) * 0.5, 0, 0, 0);
 		}
-		return n + 4;
 	}
 
-	/** One segment of a nova ring: chunky element dust with the odd rising spark. */
-	private static int ring(ClientLevel level, RandomSource rnd, Vec3 a, Vec3 b, List<Integer> colors, int budget) {
+	/** One segment of a nova ring: chunky element dust every step blocks, with the odd rising spark. */
+	private static void ring(ClientLevel level, RandomSource rnd, Vec3 a, Vec3 b, List<Integer> colors, double step) {
 		double len = a.distanceTo(b);
-		double step = Math.max(0.3, len / Math.max(1, budget));
-		int n = 0;
-		for (double d = 0; d <= len && n < budget; d += step, n++) {
+		for (double d = 0; d <= len; d += step) {
 			Vec3 at = len < 1e-3 ? a : a.lerp(b, d / len);
 			int col = colors.get(rnd.nextInt(colors.size()));
 			level.addParticle(new DustParticleOptions(col, 1.6f), at.x, at.y, at.z, 0, 0, 0);
 			if (rnd.nextInt(6) == 0) level.addParticle(ParticleTypes.END_ROD, at.x, at.y, at.z, 0, 0.04, 0);
 		}
-		return n;
 	}
 
 	private static boolean near(Vec3 a) {
@@ -153,13 +159,17 @@ public final class ClientFx {
 	}
 
 	/**
-	 * A jagged bolt from a to b (midpoint displacement) with a white-hot core, coloured glow and, when forks is set,
-	 * a side fork or two. Returns the particles spawned; the caller stops drawing segments once its budget runs out.
+	 * A jagged bolt from a to b (midpoint displacement) with a white-hot core and coloured glow, spending at most budget
+	 * particles. With room to spare it also throws a side fork or two out of that same budget.
 	 */
-	private static int arc(ClientLevel level, RandomSource rnd, Vec3 a, Vec3 b, List<Integer> colors, boolean forks) {
+	private static int arc(ClientLevel level, RandomSource rnd, Vec3 a, Vec3 b, List<Integer> colors, int budget) {
+		boolean forks = budget >= 100;
+		int own = (forks ? budget * 6 / 10 : budget) - 1;
+		// fewer kinks for a small budget: a bolt with 2^iterations legs costs at least 2 per leg
+		int iterations = own >= 16 ? 3 : own >= 8 ? 2 : 1;
 		List<Vec3> path = new ArrayList<>(List.of(a, b));
 		double off = a.distanceTo(b) * 0.15;
-		for (int it = 0; it < 3; it++) {
+		for (int it = 0; it < iterations; it++) {
 			List<Vec3> next = new ArrayList<>();
 			for (int i = 0; i + 1 < path.size(); i++) {
 				Vec3 m = path.get(i).lerp(path.get(i + 1), 0.5)
@@ -171,12 +181,15 @@ public final class ClientFx {
 			path = next;
 			off *= 0.5;
 		}
+		int legs = path.size() - 1;
+		// 2 particles per sample; at least one sample per leg so the bolt never has gaps
+		int samples = Math.max(1, Math.min(3, own / 2 / legs));
 		int n = 0;
 		int core = mix(average(colors), 0xFFFFFF, 0.75f);
-		for (int i = 0; i + 1 < path.size(); i++) {
+		for (int i = 0; i < legs; i++) {
 			Vec3 p = path.get(i), q = path.get(i + 1);
-			for (double t = 0; t < 1; t += 0.34) {
-				Vec3 at = p.lerp(q, t);
+			for (int k = 0; k < samples; k++) {
+				Vec3 at = p.lerp(q, k / (double)samples);
 				level.addParticle(new DustParticleOptions(core, 0.45f), at.x, at.y, at.z, 0, 0, 0);
 				int col = colors.get(rnd.nextInt(colors.size()));
 				level.addParticle(rnd.nextInt(4) == 0 ? ParticleTypes.ELECTRIC_SPARK : new DustParticleOptions(col, 0.9f), at.x, at.y, at.z, 0, 0, 0);
@@ -184,12 +197,14 @@ public final class ClientFx {
 			}
 		}
 		if (forks) {
-			for (int f = 0, count = 1 + rnd.nextInt(2); f < count; f++) {
+			int count = 1 + rnd.nextInt(2);
+			int each = (budget - n - 1) / count;
+			for (int f = 0; f < count && each >= 17; f++) {
 				Vec3 from = path.get(1 + rnd.nextInt(path.size() - 2));
 				Vec3 dir = b.subtract(a).scale(0.3);
 				Vec3 to = from.add(dir).add((rnd.nextDouble() - 0.5) * dir.length(), (rnd.nextDouble() - 0.5) * dir.length(),
 					(rnd.nextDouble() - 0.5) * dir.length());
-				n += arc(level, rnd, from, to, colors, false);
+				n += arc(level, rnd, from, to, colors, each);
 			}
 		}
 		level.addParticle(ParticleTypes.ELECTRIC_SPARK, b.x, b.y, b.z, 0, 0.05, 0);

@@ -59,13 +59,13 @@ public class MagicHud implements HudElement {
 		y -= 5 + 2;
 		int bx = left + (W - 80) / 2;
 		float ba = 0.4f + 0.6f * f;
-		double rate = Mana.get(p) / Mana.max(p);
+		double rate = Math.max(0, Math.min(1, Mana.get(p) / Mana.max(p)));
 		g.fill(bx, y, bx + 80, y + 5, argb(ba, 0x6A5530));
 		g.fill(bx + 1, y + 1, bx + 79, y + 4, argb(ba, 0x08060E));
 		int fw = (int)Math.round(78 * rate);
 		int cx = bx + 40;
 		boolean low = Mana.get(p) < MinegickaClient.MIN_MANA;
-		// deep blue when full, shifting to violet as it drains; grey when too low to cast
+		// sky blue when full, shifting to violet as it drains; grey when too low to cast
 		int col = low ? 0x8A8A8A : rgb(0.35 + 0.35 * (1 - rate), 0.3 + 0.35 * rate, 0.95);
 		g.fill(cx - fw / 2, y + 1, cx - fw / 2 + fw, y + 4, argb(ba, col));
 		g.fill(cx - fw / 2, y + 1, cx - fw / 2 + fw, y + 2, argb(ba * 0.6f, 0xFFFFFF)); // sheen
