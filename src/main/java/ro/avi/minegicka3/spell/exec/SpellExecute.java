@@ -44,7 +44,7 @@ public abstract class SpellExecute {
 
 	static List<Integer> colors(Spell s) {
 		List<Integer> c = new ArrayList<>();
-		for (Element e : s.elements) if (!c.contains(e.color)) c.add(e.color);
+		for (Element e : s.elements) if (!c.contains(e.color) && c.size() < 8) c.add(e.color); // LineFxPayload holds 8
 		return c;
 	}
 

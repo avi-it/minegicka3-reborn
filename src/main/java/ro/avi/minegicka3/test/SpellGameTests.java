@@ -298,4 +298,48 @@ public class SpellGameTests {
 		SpellManager.start(c, List.of(Element.ARCANE), CastType.AREA);
 		h.succeedWhen(() -> check(h, t.getHealth() < hp, "nova did not hurt target"));
 	}
+
+	@GameTest(maxTicks = 20)
+	public void forgedQueueIsRebuilt(GameTestHelper h) {
+		// 16 elements, opposites side by side and 9 different ones: nothing a real client could send
+		byte[] forged = new byte[16];
+		for (int i = 0; i < forged.length; i++) forged[i] = (byte)(i % 10);
+		List<Element> q = ro.avi.minegicka3.Minegicka.sanitize(forged, 5);
+		check(h, q.size() <= 5, "queue longer than the staff allows: " + q);
+		List<Element> again = new ArrayList<>(q);
+		for (Element e : q) check(h, again.stream().filter(x -> x.isOpposite(e)).count() == (e == Element.SHIELD ? 1 : 0),
+			"opposites left in the queue: " + q);
+		byte[] valid = {(byte)Element.FIRE.ordinal(), (byte)Element.FIRE.ordinal(), (byte)Element.ARCANE.ordinal()};
+		check(h, ro.avi.minegicka3.Minegicka.sanitize(valid, 5).equals(List.of(Element.FIRE, Element.FIRE, Element.ARCANE)),
+			"a valid queue must survive unchanged");
+		h.succeed();
+	}
+
+	@GameTest(maxTicks = 20)
+	public void sharedSpellCooldownTicksOncePerTick(GameTestHelper h) {
+		Mob t = target(h, 3.5);
+		var s = new ro.avi.minegicka3.spell.Spell(List.of(Element.ICE), CastType.SINGLE, null, null, ro.avi.minegicka3.spell.StaffStats.DEFAULT);
+		s.fixedLevel = h.getLevel();
+		s.affect(t, 10);
+		// a wall of 20 blocks shares this spell and each block ticks it
+		for (int i = 0; i < 20; i++) s.tickCooldowns();
+		check(h, !s.canHit(t), "cooldown ran down once per block instead of once per tick");
+		h.succeed();
+	}
+
+	@GameTest(maxTicks = 20)
+	public void vortexShellsCoverTheSphere(GameTestHelper h) {
+		int total = 0;
+		for (int a = 0; a <= 6; a++) {
+			for (BlockPos p : ro.avi.minegicka3.magick.VortexEffect.shell(a)) {
+				double d = Math.sqrt(p.distSqr(BlockPos.ZERO));
+				check(h, d <= a && d > a - 1, "offset " + p + " is not in shell " + a);
+			}
+			total += ro.avi.minegicka3.magick.VortexEffect.shell(a).size();
+		}
+		int sphere = 0;
+		for (BlockPos p : BlockPos.betweenClosed(new BlockPos(-6, -6, -6), new BlockPos(6, 6, 6))) if (p.distSqr(BlockPos.ZERO) <= 36) sphere++;
+		check(h, total == sphere, "shells cover " + total + " blocks, sphere has " + sphere);
+		h.succeed();
+	}
 }

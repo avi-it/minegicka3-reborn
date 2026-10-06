@@ -84,7 +84,7 @@ public class Nova implements SpellEffect {
 			pts.add(center.add(Math.cos(a1) * r, 0, Math.sin(a1) * r));
 		}
 		List<Integer> cols = new ArrayList<>();
-		for (Element el : spell.elements) if (!cols.contains(el.color)) cols.add(el.color);
+		for (Element el : spell.elements) if (!cols.contains(el.color) && cols.size() < 8) cols.add(el.color); // LineFxPayload holds 8
 		LineFxPayload fx = new LineFxPayload(LineFxPayload.NOVA, pts, cols);
 		for (ServerPlayer p : PlayerLookup.around(level, center, 96)) ServerPlayNetworking.send(p, fx);
 	}
