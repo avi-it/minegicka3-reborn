@@ -4,7 +4,6 @@
 		"cecece6": "minegicka3:item/color/ecece6",
 		"cedede7": "minegicka3:item/color/edede7",
 		"c3cc850": "minegicka3:item/color/3cc850",
-		"ce8ba40": "minegicka3:item/color/e8ba40",
 		"particle": "minegicka3:item/color/c8c8c3"
 	},
 	"elements": [
@@ -867,7 +866,7 @@
 			],
 			"faces": {
 				"north": {
-					"texture": "#ce8ba40",
+					"texture": "#c3cc850",
 					"uv": [
 						0,
 						0,
@@ -876,7 +875,7 @@
 					]
 				},
 				"south": {
-					"texture": "#ce8ba40",
+					"texture": "#c3cc850",
 					"uv": [
 						0,
 						0,
@@ -885,7 +884,7 @@
 					]
 				},
 				"east": {
-					"texture": "#ce8ba40",
+					"texture": "#c3cc850",
 					"uv": [
 						0,
 						0,
@@ -894,7 +893,7 @@
 					]
 				},
 				"west": {
-					"texture": "#ce8ba40",
+					"texture": "#c3cc850",
 					"uv": [
 						0,
 						0,
@@ -903,7 +902,7 @@
 					]
 				},
 				"up": {
-					"texture": "#ce8ba40",
+					"texture": "#c3cc850",
 					"uv": [
 						0,
 						0,
@@ -912,7 +911,7 @@
 					]
 				},
 				"down": {
-					"texture": "#ce8ba40",
+					"texture": "#c3cc850",
 					"uv": [
 						0,
 						0,
@@ -935,7 +934,7 @@
 			],
 			"faces": {
 				"north": {
-					"texture": "#ce8ba40",
+					"texture": "#c3cc850",
 					"uv": [
 						0,
 						0,
@@ -944,7 +943,7 @@
 					]
 				},
 				"south": {
-					"texture": "#ce8ba40",
+					"texture": "#c3cc850",
 					"uv": [
 						0,
 						0,
@@ -953,7 +952,7 @@
 					]
 				},
 				"east": {
-					"texture": "#ce8ba40",
+					"texture": "#c3cc850",
 					"uv": [
 						0,
 						0,
@@ -962,7 +961,7 @@
 					]
 				},
 				"west": {
-					"texture": "#ce8ba40",
+					"texture": "#c3cc850",
 					"uv": [
 						0,
 						0,
@@ -971,7 +970,7 @@
 					]
 				},
 				"up": {
-					"texture": "#ce8ba40",
+					"texture": "#c3cc850",
 					"uv": [
 						0,
 						0,
@@ -980,7 +979,7 @@
 					]
 				},
 				"down": {
-					"texture": "#ce8ba40",
+					"texture": "#c3cc850",
 					"uv": [
 						0,
 						0,

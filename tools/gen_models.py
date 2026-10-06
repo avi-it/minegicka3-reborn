@@ -168,27 +168,40 @@ def prongs(m, base_y, tip_y, spread, rgb, n=3, w=0.7):
         m.polyline([(0, base_y, 0), (x * 0.9, base_y + 1.5, z * 0.9), (x, tip_y - 1, z), (x * 0.55, tip_y, z * 0.55)], w, rgb)
 
 
+def taper(m, pts, w0, w1, rgb):
+    """Polyline whose width shrinks from w0 to w1 (horns, tails)."""
+    n = len(pts) - 1
+    for i, (p, q) in enumerate(zip(pts, pts[1:])):
+        m.rod(p, q, w0 + (w1 - w0) * (i + 0.5) / n, rgb)
+
+
 def staves():
-    m = Model()  # Staff: plain wood, three gold prongs holding a violet crystal
-    shaft(m)
-    prongs(m, NECK, NECK + 6.5, 2.4, GOLD)
+    # Each staff keeps the idea players remember from Minegicka III (a heart, a horn, a cage, a hook...)
+    # but is drawn in this project's own chunky, banded style.
+    m = Model()  # Staff: golden shaft, violet crystal resting in a gold ring
+    shaft(m, GOLD, GOLD_DARK)
+    prongs(m, NECK, NECK + 6.5, 2.4, GOLD_DARK)
+    m.hoop((0, NECK + 2.2, 0), 2.6, "y", 0.6, GOLD_DARK, n=12)
     m.crystal((0, NECK + 4.2, 0), 7.0, 3.0, (150, 70, 230))
     m.write("staff", STAFF_DISPLAY)
 
-    m = Model()  # Grand: dark wood, tall cyan crystal circled by a tilted gold halo
-    shaft(m, WOOD_DARK, GOLD)
-    prongs(m, NECK, NECK + 7, 2.7, GOLD, n=4)
-    m.crystal((0, NECK + 5, 0), 9.0, 3.4, (60, 210, 240), turn=20)
-    m.hoop((0, NECK + 5, 0), 4.4, "y", 0.6, GOLD, n=16, tilt=18)
+    m = Model()  # Grand: golden shaft, cyan crystal wrapped in a cyan spiral, a horn sweeping back
+    cyan = (40, 190, 250)
+    shaft(m, GOLD, cyan)
+    m.crystal((0, NECK + 4.5, 0), 7.5, 3.0, lighter(cyan, 0.2), turn=20)
+    spiral = [(2.4 * math.cos(t / 3), NECK + 0.8 + t * 0.45, 2.4 * math.sin(t / 3)) for t in range(0, 19)]
+    m.polyline(spiral, 0.55, cyan)
+    taper(m, [(0, NECK + 4, -1.4), (0, NECK + 4.6, -3.0), (0, NECK + 5.8, -4.4), (0, NECK + 7.6, -5.2), (0, NECK + 9.2, -5.0)],
+          1.5, 0.35, cyan)
     m.write("staff_grand", STAFF_DISPLAY)
 
-    m = Model()  # Super: silver staff, red crystal between two swept wings
-    shaft(m, SILVER, GOLD)
-    red = (230, 30, 40)
-    m.crystal((0, NECK + 4.4, 0), 7.5, 3.2, red)
+    m = Model()  # Super: golden shaft topped by a big red heart
+    red = (225, 25, 40)
+    shaft(m, GOLD, red)
     for s in (1, -1):
-        m.polyline([(0, NECK + 0.5, 0), (0, NECK + 1.5, s * 2.2), (0, NECK + 4.5, s * 3.6), (0, NECK + 7.5, s * 3.0)], 0.8, SILVER)
-        m.polyline([(0, NECK + 1.5, s * 2.2), (0, NECK + 3.0, s * 4.2), (0, NECK + 5.5, s * 4.8)], 0.6, lighter(SILVER, 0.3))
+        m.orb((0, NECK + 5.2, s * 1.5), 1.8, red)
+    m.box((0, NECK + 3.4, 0), (2.6, 3.6, 3.6), red, (45, 0, 0))          # the point
+    m.box((0, NECK + 5.6, 1.6), (3.2, 0.8, 0.8), lighter(red, 0.45))      # shine
     m.write("staff_super", STAFF_DISPLAY)
 
     m = Model()  # Hemmy's Might: black iron staff, white orb with a red band
@@ -198,45 +211,42 @@ def staves():
     m.hoop((0, NECK + 4.2, 0), 2.45, "y", 0.5, (200, 30, 30), n=12)
     m.write("staff_hemmy", STAFF_DISPLAY)
 
-    m = Model()  # Blessing: pale wood, green orb inside a gold cage, a small cross on top
-    shaft(m, WOOD_PALE, GOLD, top=NECK - 1)
+    m = Model()  # Blessing: golden shaft, green orb inside a gold cage, a small cross on top
+    shaft(m, GOLD, GOLD_DARK, top=NECK - 1)
     green = (80, 230, 100)
     m.orb((0, NECK + 3, 0), 2.4, green)
     for t in (0, 60, 120):  # three meridian bars make the cage
         a = math.radians(t)
         arc = [(3.1 * math.sin(k / 6 * math.pi) * math.cos(a), NECK + 3 - 3.1 * math.cos(k / 6 * math.pi),
                 3.1 * math.sin(k / 6 * math.pi) * math.sin(a)) for k in range(1, 6)]
-        m.polyline([(0, NECK - 0.5, 0)] + arc + [(0, NECK + 6.4, 0)], 0.45, GOLD)
+        m.polyline([(0, NECK - 0.5, 0)] + arc + [(0, NECK + 6.4, 0)], 0.45, GOLD_DARK)
     m.rod((0, NECK + 6.2, 0), (0, NECK + 9.5, 0), 0.7, GOLD)
     m.rod((-1.3, NECK + 8.3, 0), (1.3, NECK + 8.3, 0), 0.7, GOLD)
     m.write("staff_blessing", STAFF_DISPLAY)
 
-    m = Model()  # Destruction: black shaft, jagged shard crown around an ember core
-    shaft(m, BLACK, (120, 20, 20))
-    m.orb((0, NECK + 3, 0), 1.4, (255, 120, 20))
-    for i in range(5):
-        a = 2 * math.pi * i / 5
-        x, z = math.cos(a), math.sin(a)
-        tip = (2.8 * x, NECK + 6.5 + (i % 2) * 1.5, 2.8 * z)
-        m.polyline([(0.9 * x, NECK + 0.5, 0.9 * z), (2.2 * x, NECK + 3, 2.2 * z), tip], 0.9, (50, 18, 22))
-    m.crystal((0, NECK + 6.5, 0), 3.5, 1.4, (200, 30, 20))
+    m = Model()  # Destruction: golden shaft, a stack of dark crystals reddening downwards, dark red pommel
+    shaft(m, GOLD, (90, 10, 10))
+    m.crystal((0, NECK + 1.2, 0), 3.4, 2.2, (150, 20, 20), turn=30)
+    m.crystal((0, NECK + 3.4, 0), 4.6, 3.0, (75, 12, 16), turn=10)
+    m.crystal((0, NECK + 6.6, 0), 6.5, 4.0, (38, 34, 40))
+    m.orb((0, FOOT - 0.6, 0), 1.3, (70, 8, 8))
     m.write("staff_destruction", STAFF_DISPLAY)
 
-    m = Model()  # Telekinesis: steel staff, floating cyan orb inside two crossed rings
-    shaft(m, IRON, SILVER)
-    m.rod((0, NECK, 0), (0, NECK + 1.2, 0), 0.6, SILVER)
-    m.orb((0, NECK + 4.2, 0), 2.1, (120, 240, 230))
-    m.hoop((0, NECK + 4.2, 0), 3.4, "x", 0.5, SILVER, n=14, tilt=25)
-    m.hoop((0, NECK + 4.2, 0), 3.4, "z", 0.5, (60, 200, 120), n=14, tilt=-25)
+    m = Model()  # Telekinesis: golden shaft, grey stone globe circled by a green ring
+    shaft(m, GOLD, (40, 170, 90))
+    m.crystal((0, NECK + 1.0, 0), 2.2, 1.2, (40, 200, 100))
+    m.orb((0, NECK + 4.4, 0), 2.3, (120, 124, 130))
+    m.hoop((0, NECK + 4.4, 0), 3.5, "z", 0.55, (50, 210, 110), n=16, tilt=20)
     m.write("staff_telekinesis", STAFF_DISPLAY)
 
-    m = Model()  # Manipulation: purple staff ending in a crescent hook with a white bead
-    shaft(m, (90, 50, 130), SILVER)
+    m = Model()  # Manipulation: golden shaft ending in a purple crescent hook with a white bead
+    purple = (150, 60, 210)
+    shaft(m, GOLD, purple)
     hook = [(0, NECK, 0)]
     for k in range(1, 10):
         t = k / 9 * math.pi * 1.3
         hook.append((0, NECK + 3.2 - 3.2 * math.cos(t), 3.2 * math.sin(t) * (1 - k / 30)))
-    m.polyline(hook, 1.0, (150, 80, 210))
+    m.polyline(hook, 1.0, purple)
     m.orb(hook[-1], 0.8, WHITE)
     m.write("staff_manipulation", STAFF_DISPLAY)
 
@@ -280,10 +290,10 @@ def hats():
         ey, ew, edz = tiers[2]
         m.box((0, ey, edz - ew / 2 - 0.1), (1.3, 1.3, 0.3), star, (0, 0, 45))  # star emblem
         m.write(name, HAT_DISPLAY)
-    hat("hat", (40, 50, 140), GOLD, (255, 230, 120))
-    hat("hat_risk", (150, 24, 30), BLACK, (255, 200, 60))
-    hat("hat_resistance", (40, 120, 70), WOOD_PALE, (230, 230, 230))
-    hat("hat_immunity", (236, 236, 230), (60, 200, 80), GOLD)
+    hat("hat", (24, 22, 28), GOLD, (255, 230, 120))                    # black with a gold band
+    hat("hat_risk", (24, 22, 28), (200, 30, 30), (255, 90, 80))         # black with a red band
+    hat("hat_resistance", (40, 120, 70), GOLD, (230, 230, 230))         # green
+    hat("hat_immunity", (236, 236, 230), (60, 200, 80), (60, 200, 80))  # white with a green band
 
 
 def vanilla_icons():
