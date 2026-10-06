@@ -4,9 +4,13 @@
 	"version": "${version}",
 	"name": "Minegicka III Reborn",
 	"description": "Unofficial reimplementation of Minegicka III (originally by WilliamEze, MC 1.7.10) for modern Minecraft: queue up to 5 of 8 elements and cast combined spells.",
-	"authors": ["avi"],
+	"authors": ["avi-it", "Claude (Anthropic)"],
 	"contributors": ["WilliamEze (original Minegicka III design)"],
-	"license": "All-Rights-Reserved",
+	"license": "MIT",
+	"contact": {
+		"sources": "https://github.com/avi-it/minegicka3-reborn",
+		"issues": "https://github.com/avi-it/minegicka3-reborn/issues"
+	},
 	"environment": "*",
 	"entrypoints": {
 		"main": ["ro.avi.minegicka3.Minegicka"],
