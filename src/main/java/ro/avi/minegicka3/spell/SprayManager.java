@@ -25,23 +25,27 @@ public final class SprayManager {
 	}
 
 	private static final List<Live> LIVE = new ArrayList<>();
+	private static final List<Live> NEW = new ArrayList<>();
 
 	private SprayManager() {
 	}
 
 	public static void emit(Spell s, Element e, Vec3 pos, Vec3 vel, Vec3 axis) {
 		SprayParticle p = new SprayParticle(e, pos, vel, axis, s.count());
-		LIVE.add(new Live(s, p));
+		NEW.add(new Live(s, p));
 		SprayFxPayload fx = new SprayFxPayload(pos, vel, axis, e.ordinal(), s.count());
 		for (ServerPlayer pl : PlayerLookup.around(s.level(), pos, 64)) ServerPlayNetworking.send(pl, fx);
 	}
 
 	static void tick() {
+		LIVE.addAll(NEW);
+		NEW.clear();
 		LIVE.removeIf(SprayManager::tickOne);
 	}
 
 	static void clear() {
 		LIVE.clear();
+		NEW.clear();
 	}
 
 	private static boolean tickOne(Live l) {

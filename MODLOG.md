@@ -25,3 +25,4 @@
 - Not ported: Click-Craft station + staff enchanting GUIs, Magickpedia, unlock system, 888 boss + towers, Mage mob, dungeon loot.
 - Gotcha 5: Python edits on Windows must use encoding='utf-8' (cp1252 write of a non-ASCII char truncated a file).
 - Gotcha 6: 26.3 blocks have no codec(); PushReaction.IMMOVEABLE (not BLOCK); PoseStack.rotateDegrees(Axis, deg).
+- Gotcha 7: effects that spawn effects (nova -> mine -> nova) must be queued, not added to the list being ticked (ConcurrentModificationException crashed the integrated server).

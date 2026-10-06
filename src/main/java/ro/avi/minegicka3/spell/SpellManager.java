@@ -19,6 +19,9 @@ public final class SpellManager {
 	private static final Map<UUID, Spell> CHANNELLED = new HashMap<>();
 	private static final List<Spell> DETACHED = new ArrayList<>();
 	private static final List<SpellEffect> EFFECTS = new ArrayList<>();
+	/** Added while the lists are being ticked (a nova detonating a mine...); merged after the tick. */
+	private static final List<Spell> NEW_DETACHED = new ArrayList<>();
+	private static final List<SpellEffect> NEW_EFFECTS = new ArrayList<>();
 
 	private SpellManager() {
 	}
@@ -30,7 +33,7 @@ public final class SpellManager {
 		SpellExecute ex = SpellExecute.of(s);
 		ex.start(s);
 		if (s.finished) return;
-		if (s.detached) DETACHED.add(s);
+		if (s.detached) NEW_DETACHED.add(s);
 		else CHANNELLED.put(caster.getUUID(), s);
 	}
 
@@ -45,12 +48,12 @@ public final class SpellManager {
 	/** Spells that keep running without the caster holding the button (e.g. area rumble). */
 	public static void detach(Spell s) {
 		s.detached = true;
-		DETACHED.add(s);
+		NEW_DETACHED.add(s);
 	}
 
 	/** Runs a free-standing effect (nova, rumble...) until its tick() returns false. */
 	public static void add(SpellEffect e) {
-		EFFECTS.add(e);
+		NEW_EFFECTS.add(e);
 	}
 
 	public static Spell active(LivingEntity caster) {
@@ -79,7 +82,11 @@ public final class SpellManager {
 				it.remove();
 			}
 		}
+		DETACHED.addAll(NEW_DETACHED);
+		NEW_DETACHED.clear();
 		DETACHED.removeIf(SpellManager::tickOne);
+		EFFECTS.addAll(NEW_EFFECTS);
+		NEW_EFFECTS.clear();
 		EFFECTS.removeIf(e -> !e.tick());
 		SprayManager.tick();
 	}
@@ -107,6 +114,8 @@ public final class SpellManager {
 		CHANNELLED.clear();
 		DETACHED.clear();
 		EFFECTS.clear();
+		NEW_DETACHED.clear();
+		NEW_EFFECTS.clear();
 		SprayManager.clear();
 	}
 }

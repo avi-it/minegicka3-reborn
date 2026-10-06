@@ -270,6 +270,26 @@ public class SpellGameTests {
 		h.succeed();
 	}
 
+	/** Regression: a nova detonating a mine spawns a new nova mid-tick (crashed with ConcurrentModificationException). */
+	@GameTest(maxTicks = 80)
+	public void mineChainReaction(GameTestHelper h) {
+		for (int x = -8; x <= 10; x++) for (int z = -5; z <= 13; z++) h.setBlock(new BlockPos(x, 1, z), Blocks.STONE);
+		Mob c = caster(h);
+		net.minecraft.world.phys.AABB box = new net.minecraft.world.phys.AABB(h.absolutePos(BlockPos.ZERO)).inflate(24);
+		java.util.function.IntSupplier mines = () -> h.getLevel().getEntities(ro.avi.minegicka3.entity.ModEntities.MINE, box, e -> true).size();
+		SpellManager.start(c, List.of(Element.SHIELD, Element.ARCANE), CastType.AREA);
+		int[] before = {0};
+		h.runAfterDelay(20, () -> {
+			before[0] = mines.getAsInt();
+			SpellManager.start(c, List.of(Element.ARCANE), CastType.AREA);
+		});
+		h.runAfterDelay(60, () -> {
+			int after = mines.getAsInt();
+			check(h, before[0] > 0 && after < before[0] - 1, "chain reaction did not spread: " + before[0] + " -> " + after);
+			h.succeed();
+		});
+	}
+
 	@GameTest(maxTicks = 60)
 	public void arcaneNova(GameTestHelper h) {
 		Mob c = caster(h);
