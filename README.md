@@ -67,6 +67,10 @@ Requires JDK 25.
 
 Development notes are in [`MODLOG.md`](MODLOG.md).
 
+## Contributing
+
+Contributions are welcome through pull requests; see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## License
 
 [MIT](LICENSE) for the code and generated assets in this repository.
