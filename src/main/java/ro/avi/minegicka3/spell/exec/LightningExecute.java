@@ -29,8 +29,9 @@ public class LightningExecute extends SpellExecute {
 
 	@Override
 	public void start(Spell s) {
-		boolean wet = s.caster.isInWaterOrRain() && !(s.caster instanceof Player p && p.getAbilities().invulnerable);
+		boolean wet = s.caster instanceof LivingEntity && s.caster.isInWaterOrRain() && !(s.caster instanceof Player p && p.getAbilities().invulnerable);
 		if (wet) {
+			s.cast = CastType.SELF; // shocks the caster
 			s.affect(s.caster, 1);
 			s.finished = true;
 			return;

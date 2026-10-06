@@ -33,6 +33,9 @@ public class Minegicka implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		Mana.init();
+		ro.avi.minegicka3.spell.ModEffects.init();
+		ro.avi.minegicka3.block.ModBlocks.init();
+		ro.avi.minegicka3.entity.ModEntities.init();
 		ModItems.init();
 
 		PayloadTypeRegistry.serverboundPlay().register(CastPayload.TYPE, CastPayload.CODEC);

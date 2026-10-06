@@ -19,7 +19,9 @@ import net.minecraft.world.phys.Vec3;
 import ro.avi.minegicka3.Element;
 import ro.avi.minegicka3.net.LineFxPayload;
 import ro.avi.minegicka3.spell.CastType;
+import ro.avi.minegicka3.spell.Nova;
 import ro.avi.minegicka3.spell.Spell;
+import ro.avi.minegicka3.spell.SpellManager;
 
 /** Arcane / Life beams. Single = held ray, Area = expanding ring burst, Self = apply to yourself. */
 public class BeamExecute extends SpellExecute {
@@ -28,11 +30,9 @@ public class BeamExecute extends SpellExecute {
 		if (s.cast == CastType.AREA) {
 			double cost = s.count() * s.count() * 100;
 			if (s.consumeMana(cost, true, true) > 0) {
-				// The ring keeps expanding after the button is released.
-				s.detached = true;
-			} else {
-				s.finished = true;
+				SpellManager.add(new Nova(s, s.caster.position().add(0, s.caster.getBbHeight() / 2, 0), 1));
 			}
+			s.finished = true;
 		} else if (s.cast == CastType.SELF) {
 			double paid = s.consumeMana(s.count() * 50, false, false);
 			if (paid > 0) s.affect(s.caster, 0, paid);
@@ -42,10 +42,6 @@ public class BeamExecute extends SpellExecute {
 
 	@Override
 	public void update(Spell s) {
-		if (s.cast == CastType.AREA) {
-			updateArea(s);
-			return;
-		}
 		if (s.consumeMana(s.count() * 2.2, false, false) == 0 || s.ticks > s.maxContinuousTicks()) {
 			s.finished = true;
 			return;
@@ -100,29 +96,5 @@ public class BeamExecute extends SpellExecute {
 			level.setBlockAndUpdate(below, Blocks.DIRT.defaultBlockState());
 			s.blockCooldown = 40 / arcane;
 		}
-	}
-
-	/** Area beam: a ring that grows to 4 + 2·elements blocks and hits everything it crosses once. */
-	private static void updateArea(Spell s) {
-		double maxR = 4 + 2 * s.count();
-		double r = s.ticks * 0.5;
-		if (r > maxR) {
-			s.finished = true;
-			return;
-		}
-		Vec3 c = s.areaCenter == null ? (s.areaCenter = s.caster.position().add(0, s.caster.getBbHeight() / 2, 0)) : s.areaCenter;
-		AABB box = new AABB(c, c).inflate(r, 1.5, r);
-		for (Entity e : s.level().getEntities(s.caster, box, e -> e instanceof LivingEntity && e.isAlive())) {
-			double d = Math.sqrt(e.distanceToSqr(c.x, e.getY(), c.z));
-			if (d <= r && d >= r - 1.5) s.affect(e, 1000);
-		}
-		int segs = Math.max(12, (int)(r * 6));
-		java.util.ArrayList<Vec3> pts = new java.util.ArrayList<>();
-		for (int i = 0; i < segs && pts.size() < 62; i++) {
-			double a0 = Math.PI * 2 * i / segs, a1 = Math.PI * 2 * (i + 1) / segs;
-			pts.add(c.add(Math.cos(a0) * r, 0, Math.sin(a0) * r));
-			pts.add(c.add(Math.cos(a1) * r, 0, Math.sin(a1) * r));
-		}
-		sendLines(s, LineFxPayload.BEAM, pts);
 	}
 }

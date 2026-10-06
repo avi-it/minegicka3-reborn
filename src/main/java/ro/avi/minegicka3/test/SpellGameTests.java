@@ -152,4 +152,89 @@ public class SpellGameTests {
 			h.succeed();
 		});
 	}
+
+	private static int countBlocks(GameTestHelper h, net.minecraft.world.level.block.Block b, int r) {
+		int n = 0;
+		BlockPos c = h.absolutePos(new BlockPos(1, 2, 4));
+		for (BlockPos p : BlockPos.betweenClosed(c.offset(-r, -r, -r), c.offset(r, r, r))) {
+			if (h.getLevel().getBlockState(p).is(b)) n++;
+		}
+		return n;
+	}
+
+	@GameTest(maxTicks = 20)
+	public void shieldDome(GameTestHelper h) {
+		Mob c = caster(h);
+		SpellManager.start(c, List.of(Element.SHIELD), CastType.AREA);
+		h.runAfterDelay(1, () -> {
+			int n = countBlocks(h, ro.avi.minegicka3.block.ModBlocks.SHIELD, 7);
+			check(h, n > 50, "dome too small: " + n);
+			h.succeed();
+		});
+	}
+
+	@GameTest(maxTicks = 20)
+	public void earthWall(GameTestHelper h) {
+		Mob c = caster(h);
+		SpellManager.start(c, List.of(Element.SHIELD, Element.EARTH), CastType.SINGLE);
+		h.runAfterDelay(1, () -> {
+			int n = countBlocks(h, ro.avi.minegicka3.block.ModBlocks.WALL, 8);
+			check(h, n > 5, "wall too small: " + n);
+			h.succeed();
+		});
+	}
+
+	@GameTest(maxTicks = 20)
+	public void fireWard(GameTestHelper h) {
+		Mob c = caster(h);
+		SpellManager.start(c, List.of(Element.SHIELD, Element.FIRE), CastType.SELF);
+		check(h, c.hasEffect(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE), "no fire resistance");
+		h.succeed();
+	}
+
+	@GameTest(maxTicks = 20)
+	public void minesAndStorms(GameTestHelper h) {
+		Mob c = caster(h);
+		SpellManager.start(c, List.of(Element.SHIELD, Element.ARCANE), CastType.SINGLE);
+		SpellManager.start(c, List.of(Element.SHIELD, Element.FIRE), CastType.SINGLE);
+		h.runAfterDelay(1, () -> {
+			net.minecraft.world.phys.AABB box = new net.minecraft.world.phys.AABB(h.absolutePos(BlockPos.ZERO)).inflate(16);
+			int mines = h.getLevel().getEntities(ro.avi.minegicka3.entity.ModEntities.MINE, box, e -> true).size();
+			int storms = h.getLevel().getEntities(ro.avi.minegicka3.entity.ModEntities.STORM, box, e -> true).size();
+			check(h, mines > 0, "no mines");
+			check(h, storms > 0, "no storms");
+			h.succeed();
+		});
+	}
+
+	@GameTest(maxTicks = 120)
+	public void boulderHits(GameTestHelper h) {
+		Mob c = caster(h);
+		Mob t = target(h, 5.5);
+		aimAt(c, t);
+		float hp = t.getHealth();
+		SpellManager.start(c, List.of(Element.EARTH, Element.EARTH, Element.EARTH), CastType.SINGLE);
+		h.runAfterDelay(40, () -> SpellManager.stop(c));
+		h.succeedWhen(() -> check(h, t.getHealth() < hp, "boulder did not hurt target"));
+	}
+
+	@GameTest(maxTicks = 120)
+	public void iciclesHit(GameTestHelper h) {
+		Mob c = caster(h);
+		Mob t = target(h, 5.5);
+		aimAt(c, t);
+		float hp = t.getHealth();
+		SpellManager.start(c, List.of(Element.ICE, Element.ICE), CastType.SINGLE);
+		h.runAfterDelay(60, () -> SpellManager.stop(c));
+		h.succeedWhen(() -> check(h, t.getHealth() < hp, "icicles did not hurt target"));
+	}
+
+	@GameTest(maxTicks = 60)
+	public void arcaneNova(GameTestHelper h) {
+		Mob c = caster(h);
+		Mob t = target(h, 5.5);
+		float hp = t.getHealth();
+		SpellManager.start(c, List.of(Element.ARCANE), CastType.AREA);
+		h.succeedWhen(() -> check(h, t.getHealth() < hp, "nova did not hurt target"));
+	}
 }

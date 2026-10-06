@@ -33,9 +33,15 @@ public final class SpellDamage {
 		if (fire > 0 && !wet) e.igniteForSeconds(fire * 3);
 		if (wet || cold > 0) e.clearFire();
 		if (e instanceof LivingEntity le) {
-			if (cold > 0) le.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 20 * cold, cold - 1), s.caster);
+			if (cold > 0) le.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 20 * cold, cold - 1), s.owner);
 			if (life > 0) le.removeEffect(MobEffects.POISON);
 		}
+	}
+
+	/** 1 - 0.15 per effect level, floored at 0. */
+	private static double ward(LivingEntity le, net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect) {
+		MobEffectInstance i = le.getEffect(effect);
+		return i == null ? 1 : Math.max(0, 1 - 0.15 * (i.getAmplifier() + 1));
 	}
 
 	static void damage(Spell s, Entity e, double scale) {
@@ -72,6 +78,21 @@ public final class SpellDamage {
 			heal /= 2;
 		}
 		if (wet) dLightning *= 2;
+		if (e instanceof LivingEntity le) {
+			dArcane *= ward(le, ModEffects.ARCANE_RESISTANCE);
+			double coldRes = ward(le, ModEffects.COLD_RESISTANCE);
+			dCold *= coldRes;
+			dIce *= coldRes;
+			double fireRes = ward(le, MobEffects.FIRE_RESISTANCE);
+			dFire *= fireRes;
+			double waterRes = ward(le, MobEffects.WATER_BREATHING);
+			dWater *= waterRes;
+			dSteam *= Math.max(0, 1 - (1 - fireRes) / 2 - (1 - waterRes) / 2);
+			dLightning *= ward(le, ModEffects.LIGHTNING_RESISTANCE);
+			dEarth *= ward(le, MobEffects.RESISTANCE);
+			MobEffectInstance boost = le.getEffect(ModEffects.LIFE_BOOST);
+			if (boost != null) heal *= 1 + 0.15 * (boost.getAmplifier() + 1);
+		}
 		if (e.fireImmune()) dFire = 0;
 		// Undead: life hurts, arcane heals.
 		if (e.is(EntityTypeTags.INVERTED_HEALING_AND_HARM)) {
@@ -82,8 +103,8 @@ public final class SpellDamage {
 
 		ServerLevel level = s.level();
 		double total = (dWater + dFire + dArcane + dLightning + dEarth + dIce + dCold + dSteam) * s.staff.power() * scale;
-		if (total > 0 && e != s.caster || total > 0 && s.cast == CastType.SELF) {
-			DamageSource src = s.caster != null ? level.damageSources().indirectMagic(s.caster, s.caster) : level.damageSources().magic();
+		if (total > 0 && (e != s.owner || s.cast == CastType.SELF)) {
+			DamageSource src = s.owner != null ? level.damageSources().indirectMagic(s.caster, s.owner) : level.damageSources().magic();
 			e.hurtServer(level, src, (float)total);
 			if (e instanceof Creeper c && dLightning >= 3.2 && level.getRandom().nextInt(4) == 0) {
 				LightningBolt bolt = EntityTypes.LIGHTNING_BOLT.create(level, EntitySpawnReason.TRIGGERED);

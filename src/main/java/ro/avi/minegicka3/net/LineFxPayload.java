@@ -9,11 +9,11 @@ import net.minecraft.world.phys.Vec3;
 import ro.avi.minegicka3.Minegicka;
 
 /**
- * Server → client: draw line segments for one tick. kind 0 = beam, 1 = lightning arc.
+ * Server → client: draw line segments for one tick. kind 0 = beam, 1 = lightning arc, 2 = nova ring.
  * points holds segment pairs (a0, b0, a1, b1, ...); colors are the spell's element colours.
  */
 public record LineFxPayload(int kind, List<Vec3> points, List<Integer> colors) implements CustomPacketPayload {
-	public static final int BEAM = 0, LIGHTNING = 1;
+	public static final int BEAM = 0, LIGHTNING = 1, NOVA = 2;
 	public static final Type<LineFxPayload> TYPE = new Type<>(Minegicka.id("line_fx"));
 	public static final StreamCodec<ByteBuf, LineFxPayload> CODEC = StreamCodec.composite(
 		ByteBufCodecs.VAR_INT, LineFxPayload::kind,

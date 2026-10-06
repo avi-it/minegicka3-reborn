@@ -68,8 +68,54 @@ def essence(col):
     return px
 
 
+def noise(x, y, seed):
+    n = (x * 374761393 + y * 668265263 + seed * 2147483647) & 0xFFFFFFFF
+    n = ((n ^ (n >> 13)) * 1274126177) & 0xFFFFFFFF
+    return (n & 0xFFFF) / 65535.0
+
+
+def shield_block():
+    px = [[(0, 0, 0, 0)] * 16 for _ in range(16)]
+    for y in range(16):
+        for x in range(16):
+            edge = x in (0, 15) or y in (0, 15)
+            hexline = (x + 2 * y) % 8 == 0 or (x - 2 * y) % 8 == 0
+            if edge:
+                px[y][x] = (255, 250, 150, 170)
+            elif hexline:
+                px[y][x] = (255, 246, 120, 120)
+            else:
+                k = noise(x, y, 7)
+                px[y][x] = (255, 255, 160 + int(60 * k), 45 + int(25 * k))
+    for (x, y) in [(4, 5), (11, 3), (7, 11), (12, 12)]:
+        px[y][x] = (255, 255, 230, 220)
+    return px
+
+
+def wall_block(base, light, dark, seed):
+    px = [[(0, 0, 0, 255)] * 16 for _ in range(16)]
+    b, l, d = hexc(base), hexc(light), hexc(dark)
+    for y in range(16):
+        for x in range(16):
+            k = noise(x, y, seed)
+            # vertical spike ridges every 4 px
+            ridge = abs((x % 4) - 1.5) / 1.5
+            c = shade(b, 0.8 + 0.35 * k - 0.25 * ridge)
+            if x % 4 == 3:
+                c = d
+            elif x % 4 == 1 and k > 0.6:
+                c = l
+            px[y][x] = c
+    return px
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
+    blocks = os.path.join(OUT, "..", "block")
+    os.makedirs(blocks, exist_ok=True)
+    png(os.path.join(blocks, "shield.png"), shield_block())
+    png(os.path.join(blocks, "wall_earth.png"), wall_block(0x6B4A26, 0x9A7448, 0x3A2812, 3))
+    png(os.path.join(blocks, "wall_ice.png"), wall_block(0x8FD8F0, 0xE0FFFF, 0x4A9AC0, 5))
     png(os.path.join(OUT, "staff.png"), staff(0x7A5230, 0x3FA7FF))
     png(os.path.join(OUT, "staff_grand.png"), staff(0x5B3A1E, 0xFFD23F, prongs=0xE0B030))
     png(os.path.join(OUT, "staff_super.png"), staff(0x2E2440, 0xD040FF, prongs=0xB0B0C8, orbit=0xF0A0FF))

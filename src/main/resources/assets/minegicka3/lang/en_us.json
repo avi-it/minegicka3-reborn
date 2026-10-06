@@ -12,5 +12,15 @@
 	"key.minegicka3.utility": "Cast Magick / Clear Queue (sneak)",
 	"item.minegicka3.staff": "Staff",
 	"item.minegicka3.staff_grand": "Grand Staff",
-	"item.minegicka3.staff_super": "Super Staff"
+	"item.minegicka3.staff_super": "Super Staff",
+	"block.minegicka3.shield": "Magic Shield",
+	"block.minegicka3.wall": "Magic Wall",
+	"entity.minegicka3.boulder": "Boulder",
+	"entity.minegicka3.icicle": "Icicle",
+	"entity.minegicka3.mine": "Magic Mine",
+	"entity.minegicka3.storm": "Storm",
+	"effect.minegicka3.cold_resistance": "Cold Resistance",
+	"effect.minegicka3.life_boost": "Life Effective",
+	"effect.minegicka3.arcane_resistance": "Arcane Resistance",
+	"effect.minegicka3.lightning_resistance": "Lightning Resistance"
 }

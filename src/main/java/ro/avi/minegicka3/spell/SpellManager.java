@@ -18,6 +18,7 @@ import ro.avi.minegicka3.spell.exec.SpellExecute;
 public final class SpellManager {
 	private static final Map<UUID, Spell> CHANNELLED = new HashMap<>();
 	private static final List<Spell> DETACHED = new ArrayList<>();
+	private static final List<SpellEffect> EFFECTS = new ArrayList<>();
 
 	private SpellManager() {
 	}
@@ -47,6 +48,11 @@ public final class SpellManager {
 		DETACHED.add(s);
 	}
 
+	/** Runs a free-standing effect (nova, rumble...) until its tick() returns false. */
+	public static void add(SpellEffect e) {
+		EFFECTS.add(e);
+	}
+
 	public static Spell active(LivingEntity caster) {
 		return CHANNELLED.get(caster.getUUID());
 	}
@@ -73,17 +79,19 @@ public final class SpellManager {
 			}
 		}
 		DETACHED.removeIf(SpellManager::tickOne);
+		EFFECTS.removeIf(e -> !e.tick());
 		SprayManager.tick();
 	}
 
 	/** Returns true when the spell is done and should be dropped. */
 	private static boolean tickOne(Spell s) {
 		if (s.finished) return true;
-		if (s.caster.isRemoved() || s.caster.isDeadOrDying() || s.ticks >= 2000) {
+		if (s.caster.isRemoved() || !s.caster.isAlive() || s.ticks >= 2000) {
 			SpellExecute.of(s).stop(s);
 			s.finished = true;
 			return true;
 		}
+		if (s.paused) return false;
 		s.ticks++;
 		SpellExecute.of(s).update(s);
 		s.tickCooldowns();
@@ -97,6 +105,7 @@ public final class SpellManager {
 	public static void clear() {
 		CHANNELLED.clear();
 		DETACHED.clear();
+		EFFECTS.clear();
 		SprayManager.clear();
 	}
 }

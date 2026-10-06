@@ -16,7 +16,10 @@ public class Spell {
 	public final List<Element> elements;
 	public final SpellType type;
 	public CastType cast;
-	public final LivingEntity caster;
+	/** What the spell comes out of: a living caster, or a storm / mine / boulder entity. */
+	public final Entity caster;
+	/** Who gets the blame (damage source, mana); null for ownerless effects. */
+	public final LivingEntity owner;
 	public final StaffStats staff;
 	public int ticks;
 	public boolean finished;
@@ -26,21 +29,36 @@ public class Spell {
 	public int blockCooldown;
 	/** Runs on its own, independent of the caster's held button. */
 	public boolean detached;
+	/** Skips this tick (storms run spray spells every other tick). */
+	public boolean paused;
 	/** Fixed centre for area spells that outlive the button press. */
 	public net.minecraft.world.phys.Vec3 areaCenter;
 	/** Per-target cooldown so continuous spells do not hit every tick. */
 	private final Map<UUID, Integer> recentlyHit = new HashMap<>();
 
 	public Spell(List<Element> elements, CastType cast, LivingEntity caster, StaffStats staff) {
+		this(elements, cast, caster, caster, staff);
+	}
+
+	public Spell(List<Element> elements, CastType cast, Entity caster, LivingEntity owner, StaffStats staff) {
 		this.elements = new ArrayList<>(elements);
 		this.type = SpellType.of(elements);
 		this.cast = cast;
 		this.caster = caster;
+		this.owner = owner;
 		this.staff = staff;
 	}
 
+	/** A copy of this spell with other elements / cast type, fired from another entity (storm, mine, boulder). */
+	public Spell derive(List<Element> els, CastType cast, Entity from) {
+		return new Spell(els, cast, from, owner, staff);
+	}
+
+	/** Level for caster-less spells (walls reloaded from disk). */
+	public ServerLevel fixedLevel;
+
 	public ServerLevel level() {
-		return (ServerLevel)caster.level();
+		return caster != null ? (ServerLevel)caster.level() : fixedLevel;
 	}
 
 	public int count() {
@@ -89,10 +107,11 @@ public class Spell {
 
 	/** Consumes mana; returns the fraction actually paid (1 = full). Creative players pay nothing. */
 	public double consumeMana(double amount, boolean mustHaveAll, boolean warn) {
-		return Mana.consume(caster, amount * staff.consume(), mustHaveAll, warn);
+		if (owner == null || owner != caster) return 1;
+		return Mana.consume(owner, amount * staff.consume(), mustHaveAll, warn);
 	}
 
 	public boolean isPlayer() {
-		return caster instanceof Player;
+		return owner instanceof Player;
 	}
 }

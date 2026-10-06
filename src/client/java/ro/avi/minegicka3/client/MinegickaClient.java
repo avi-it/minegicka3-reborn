@@ -7,6 +7,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.event.client.player.ClientPreAttackCallback;
 import net.minecraft.client.KeyMapping;
@@ -14,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import ro.avi.minegicka3.Element;
 import ro.avi.minegicka3.Minegicka;
+import ro.avi.minegicka3.entity.ModEntities;
 import ro.avi.minegicka3.item.StaffItem;
 import ro.avi.minegicka3.net.CastPayload;
 import ro.avi.minegicka3.net.LineFxPayload;
@@ -51,6 +53,10 @@ public class MinegickaClient implements ClientModInitializer {
 		// Holding a staff, left click is a self-cast instead of an attack.
 		ClientPreAttackCallback.EVENT.register((mc, player, clicks) -> holdsStaff(player));
 		HudElementRegistry.addLast(Minegicka.id("hud"), new MagicHud());
+		EntityRendererRegistry.register(ModEntities.BOULDER, MagicEntityRenderer::new);
+		EntityRendererRegistry.register(ModEntities.ICICLE, MagicEntityRenderer::new);
+		EntityRendererRegistry.register(ModEntities.MINE, MagicEntityRenderer::new);
+		EntityRendererRegistry.register(ModEntities.STORM, MagicEntityRenderer::new);
 	}
 
 	private static void key(Element e, int code) {

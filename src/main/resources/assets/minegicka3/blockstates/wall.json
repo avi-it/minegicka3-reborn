@@ -1,0 +1,6 @@
+{
+	"variants": {
+		"icy=false": { "model": "minegicka3:block/wall_earth" },
+		"icy=true": { "model": "minegicka3:block/wall_ice" }
+	}
+}
