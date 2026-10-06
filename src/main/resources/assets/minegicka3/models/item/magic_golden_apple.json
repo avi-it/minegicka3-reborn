@@ -1,6 +1,6 @@
 {
 	"parent": "minecraft:item/generated",
 	"textures": {
-		"layer0": "minegicka3:item/magic_golden_apple"
+		"layer0": "minecraft:item/golden_apple"
 	}
 }

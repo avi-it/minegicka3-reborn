@@ -8,13 +8,16 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
+import ro.avi.minegicka3.Minegicka;
 import ro.avi.minegicka3.Element;
 import ro.avi.minegicka3.item.StaffItem;
 import ro.avi.minegicka3.spell.Mana;
 
 /**
  * Bottom-right wizard HUD (Minegicka layout, mirrored for a bottom anchor): element hotkey grid, mana bar,
- * then the queued elements. Icons are drawn as coloured tiles with the element's initial.
+ * then the queued elements. Element icons come from textures/gui/elements.png (a resource pack can swap in the original).
  */
 public class MagicHud implements HudElement {
 	private static final int W = 83, MARGIN = 2, KEY = 20, Q = 15, GAP = 2;
@@ -96,16 +99,14 @@ public class MagicHud implements HudElement {
 		return false;
 	}
 
+	/** Icon sheet: 4 x 5 cells, index = ordinal*2 (+1 greyed). UVs are in 1024x1280 units so any resolution works. */
+	private static final Identifier ICONS = Minegicka.id("textures/gui/elements.png");
+
 	private static void tile(GuiGraphicsExtractor g, Font font, Element e, int x, int y, int size, float alpha) {
 		if (alpha <= 0.02f) return;
-		g.fill(x, y, x + size, y + size, argb(alpha, 0x101010));
-		g.fill(x + 1, y + 1, x + size - 1, y + size - 1, argb(alpha, e.color));
-		g.fill(x + 1, y + 1, x + size - 1, y + 3, argb(alpha * 0.35f, 0xFFFFFF));
-		if (font != null && size >= 12) {
-			String s = e.name().substring(0, 1);
-			int txt = (e == Element.COLD || e == Element.SHIELD || e == Element.ICE || e == Element.LIFE) ? 0x202020 : 0xFFFFFF;
-			g.text(font, s, x + (size - font.width(s)) / 2 + 1, y + (size - 8) / 2 + 1, argb(alpha, txt), false);
-		}
+		int idx = e.ordinal() * 2;
+		g.blit(RenderPipelines.GUI_TEXTURED, ICONS, x, y, (idx % 4) * 256f, (idx / 4) * 256f, size, size, 256, 256, 1024, 1280,
+			argb(alpha, 0xFFFFFF));
 	}
 
 	private static int argb(float a, int rgb) {

@@ -40,11 +40,11 @@ public class MinegickaClient implements ClientModInitializer {
 		key(Element.WATER, InputConstants.KEY_Y);
 		key(Element.LIFE, InputConstants.KEY_U);
 		key(Element.SHIELD, InputConstants.KEY_I);
-		key(Element.COLD, InputConstants.KEY_O);
+		key(Element.COLD, InputConstants.KEY_N); // O is Friends in 26.3
 		key(Element.LIGHTNING, InputConstants.KEY_H);
 		key(Element.ARCANE, InputConstants.KEY_J);
 		key(Element.EARTH, InputConstants.KEY_K);
-		key(Element.FIRE, InputConstants.KEY_L);
+		key(Element.FIRE, InputConstants.KEY_M); // L is Advancements in 26.3
 		keyUtility = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.minegicka3.utility", InputConstants.KEY_R, CATEGORY));
 
 		ClientPlayNetworking.registerGlobalReceiver(SprayFxPayload.TYPE, (p, ctx) -> ClientFx.onSpray(p));
@@ -61,7 +61,7 @@ public class MinegickaClient implements ClientModInitializer {
 
 	private static void key(Element e, int code) {
 		ELEMENT_KEYS.put(e, KeyMappingHelper.registerKeyMapping(
-			new KeyMapping("key.minegicka3." + e.name().toLowerCase(), code, CATEGORY)));
+			new KeyMapping("key.minegicka3.element." + e.name().toLowerCase(), code, CATEGORY)));
 	}
 
 	static boolean holdsStaff(LocalPlayer p) {

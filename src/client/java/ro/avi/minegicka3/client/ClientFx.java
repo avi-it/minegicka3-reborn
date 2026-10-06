@@ -32,12 +32,14 @@ public final class ClientFx {
 			SPRAYS.clear();
 			return;
 		}
+		Vec3 eye = mc.player != null ? mc.player.getEyePosition() : null;
 		for (SprayParticle s : SPRAYS) {
 			Vec3 a = s.pos;
 			s.move(level);
 			// two puffs per tick along the path so fast streams look continuous
 			for (int i = 0; i < 2; i++) {
 				Vec3 at = a.lerp(s.pos, i * 0.5);
+				if (eye != null && eye.distanceToSqr(at) < 2.25) continue; // keep the caster's own view clear
 				level.addParticle(sprayParticle(s.element, level.getRandom()), at.x, at.y, at.z, 0, 0, 0);
 			}
 		}
@@ -66,14 +68,21 @@ public final class ClientFx {
 			} else {
 				double len = a.distanceTo(b);
 				double step = Math.max(0.35, len / budget);
-				for (double d = 0; d <= len && budget > 0; d += step, budget--) {
+				// a beam from the local player's own staff starts a bit ahead so it doesn't cover the screen
+				double start = p.kind() == LineFxPayload.BEAM && pts.size() == 2 && near(a) ? Math.min(1.5, len) : 0;
+				for (double d = start; d <= len && budget > 0; d += step, budget--) {
 					Vec3 at = a.lerp(b, d / len);
 					int col = p.colors().get(rnd.nextInt(p.colors().size()));
-					level.addParticle(new DustParticleOptions(col, 1.1f), at.x, at.y, at.z, 0, 0, 0);
+					level.addParticle(new DustParticleOptions(col, p.kind() == LineFxPayload.NOVA ? 1.4f : 0.8f), at.x, at.y, at.z, 0, 0, 0);
 				}
 				if (pts.size() == 2) level.addParticle(ParticleTypes.END_ROD, b.x, b.y, b.z, 0, 0.02, 0);
 			}
 		}
+	}
+
+	private static boolean near(Vec3 a) {
+		var pl = Minecraft.getInstance().player;
+		return pl != null && pl.getEyePosition().distanceToSqr(a) < 1;
 	}
 
 	/** A jagged bolt from a to b: midpoint displacement, drawn with sparks and purple dust. */

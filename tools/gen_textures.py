@@ -187,8 +187,42 @@ def wall_block(base, light, dark, seed):
     return px
 
 
+def element_sheet():
+    """HUD icon sheet, same layout as Minegicka's elements.png: 4 columns x 5 rows, cell index = ordinal*2 (+1 greyed)."""
+    cols = [0xD01818, 0xD8E8F8, 0x6B4A26, 0xFF6010, 0x60E0F0, 0x30C030, 0xC040E0, 0xF0D020, 0x9A9A9A, 0x2040F0]
+    cell = 64
+    px = [[(0, 0, 0, 0)] * (cell * 4) for _ in range(cell * 5)]
+    for idx in range(20):
+        base = hexc(cols[idx // 2])
+        if idx % 2:
+            g = sum(base[:3]) // 3
+            base = (g, g, g, 255)
+        cx0, cy0 = (idx % 4) * cell, (idx // 4) * cell
+        for y in range(cell):
+            for x in range(cell):
+                dx, dy = x - 31.5, y - 31.5
+                d = (dx * dx + dy * dy) ** 0.5
+                if d < 25:
+                    k = 1.25 - d / 40 - (dy / 120)
+                    px[cy0 + y][cx0 + x] = shade(base, k)
+                elif d < 28:
+                    px[cy0 + y][cx0 + x] = (150, 120, 70, 255)
+                elif d < 31:
+                    px[cy0 + y][cx0 + x] = (20, 20, 20, 255)
+        # glossy highlight
+        for y in range(10, 20):
+            for x in range(20, 36):
+                if ((x - 28) / 9) ** 2 + ((y - 15) / 5) ** 2 < 1:
+                    c = px[cy0 + y][cx0 + x]
+                    px[cy0 + y][cx0 + x] = tuple(min(255, v + 60) for v in c[:3]) + (255,)
+    return px
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
+    gui = os.path.join(OUT, "..", "gui")
+    os.makedirs(gui, exist_ok=True)
+    png(os.path.join(gui, "elements.png"), element_sheet())
     blocks = os.path.join(OUT, "..", "block")
     os.makedirs(blocks, exist_ok=True)
     png(os.path.join(blocks, "shield.png"), shield_block())

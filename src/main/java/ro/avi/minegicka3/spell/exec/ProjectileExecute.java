@@ -97,11 +97,11 @@ public class ProjectileExecute extends SpellExecute {
 		}
 		// gathering motes in front of the staff
 		if (s.ticks % 2 == 0) {
-			Vec3 mid = muzzle(s, 0.6, 0.2);
-			double spread = 0.6 - 0.4 * s.charge;
+			Vec3 mid = muzzle(s, 1.4, 0.3);
+			double spread = 0.35 - 0.25 * s.charge;
 			int col = s.has(Element.ICE) && (!s.has(Element.EARTH) || s.ticks % 4 == 0) ? Element.ICE.color : 0x6B4A26;
-			s.level().sendParticles(new DustParticleOptions(col, (float)(0.6 + s.charge)), mid.x, mid.y, mid.z,
-				(int)Math.ceil(2 * s.charge) + 1, spread, spread, spread, 0);
+			s.level().sendParticles(new DustParticleOptions(col, (float)(0.35 + 0.35 * s.charge)), mid.x, mid.y, mid.z,
+				(int)Math.ceil(2 * s.charge), spread, spread, spread, 0);
 		}
 	}
 

@@ -21,7 +21,7 @@ for el in ["arcane", "cold", "earth", "fire", "ice", "life", "lightning", "shiel
 
 os.makedirs(os.path.join(ROOT, "items"), exist_ok=True)
 os.makedirs(os.path.join(ROOT, "models", "item"), exist_ok=True)
-for f in sorted(os.listdir(TEX)):
+for f in sorted(x for x in os.listdir(TEX) if x.endswith(".png")):
     n = f[:-4]
     handheld = n.startswith("staff") or n.startswith("stick")
     with open(os.path.join(ROOT, "items", n + ".json"), "w") as o:

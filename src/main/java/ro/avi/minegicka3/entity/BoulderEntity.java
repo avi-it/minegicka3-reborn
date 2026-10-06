@@ -76,9 +76,10 @@ public class BoulderEntity extends MagicEntity {
 		}
 		if (onGround()) {
 			groundTicks++;
-			if (v.horizontalDistanceSqr() >= 0.1 && level() instanceof ServerLevel sl) {
+			if (v.horizontalDistanceSqr() >= 0.1 && tickCount % 3 == 0 && level() instanceof ServerLevel sl
+				&& (spell == null || spell.owner == null || spell.owner.distanceToSqr(this) > 16)) {
 				BlockState below = sl.getBlockState(blockPosition().below());
-				if (!below.isAir()) sl.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, below), getX(), getY(), getZ(), 3, size() / 2, 0.05, size() / 2, 0.1);
+				if (!below.isAir()) sl.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, below), getX(), getY(), getZ(), 2, size() / 2, 0.05, size() / 2, 0.05);
 			}
 		}
 		setDeltaMovement(v);

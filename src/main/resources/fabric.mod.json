@@ -11,7 +11,8 @@
 	"entrypoints": {
 		"main": ["ro.avi.minegicka3.Minegicka"],
 		"client": ["ro.avi.minegicka3.client.MinegickaClient"],
-		"fabric-gametest": ["ro.avi.minegicka3.test.SpellGameTests"]
+		"fabric-gametest": ["ro.avi.minegicka3.test.SpellGameTests"],
+		"fabric-client-gametest": ["ro.avi.minegicka3.client.test.LookClientTest"]
 	},
 	"depends": {
 		"fabricloader": ">=0.19.0",

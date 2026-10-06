@@ -15,6 +15,13 @@ loom {
 			vmArg "-Dfabric-api.gametest.report-file=${project.layout.buildDirectory.get()}/gametest-report.xml"
 			runDir "build/gametest"
 		}
+		// Visual check in the real client, saves screenshots: ./gradlew runClientGametest
+		clientGametest {
+			client()
+			name "Client Game Test"
+			vmArg "-Dfabric.client.gametest"
+			runDir "build/run/clientGameTest"
+		}
 	}
 	mods {
 		"minegicka3" {

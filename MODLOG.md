@@ -26,3 +26,6 @@
 - Gotcha 5: Python edits on Windows must use encoding='utf-8' (cp1252 write of a non-ASCII char truncated a file).
 - Gotcha 6: 26.3 blocks have no codec(); PushReaction.IMMOVEABLE (not BLOCK); PoseStack.rotateDegrees(Axis, deg).
 - Gotcha 7: effects that spawn effects (nova -> mine -> nova) must be queued, not added to the list being ticked (ConcurrentModificationException crashed the integrated server).
+- Gotcha 8: 26.3 key codes are USB HID: L=Advancements, O=Friends, G=quick actions, C/X=toolbars. Element keys moved to N (Cold) and M (Fire); key IDs renamed to key.minegicka3.element.* so saved options pick up the new defaults.
+- Look: tools/gen_models.py rebuilds the original's code-drawn staves/gems/hats as JSON cuboids (free x/y/z element rotation in 26.3). Original HUD icons only via tools/make_original_pack.py from the user's own jar (never shipped).
+- Visual oracle: ./gradlew runClientGametest (LookClientTest) drives the real client internally and saves screenshots to build/run/clientGameTest/screenshots.
