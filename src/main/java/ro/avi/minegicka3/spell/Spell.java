@@ -84,7 +84,16 @@ public class Spell {
 		return !recentlyHit.containsKey(e.getUUID());
 	}
 
+	private long cooldownsTickedAt = Long.MIN_VALUE;
+
+	/** Counts hit cooldowns down by one game tick. Safe to call from several places (wall blocks share one spell). */
 	public void tickCooldowns() {
+		ServerLevel l = level();
+		if (l != null) {
+			long now = l.getGameTime();
+			if (now == cooldownsTickedAt) return;
+			cooldownsTickedAt = now;
+		}
 		recentlyHit.replaceAll((k, v) -> v - 1);
 		recentlyHit.values().removeIf(v -> v <= 0);
 	}

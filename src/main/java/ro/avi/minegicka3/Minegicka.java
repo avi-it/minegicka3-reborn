@@ -45,21 +45,29 @@ public class Minegicka implements ModInitializer {
 		ServerPlayNetworking.registerGlobalReceiver(CastPayload.TYPE, (msg, ctx) -> onCast(ctx.player(), msg));
 
 		ServerTickEvents.END_SERVER_TICK.register(SpellManager::tick);
-		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> SpellManager.stop(handler.player));
+		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+			SpellManager.stop(handler.player);
+			forget(handler.player);
+		});
 		ServerLifecycleEvents.SERVER_STOPPED.register(server -> SpellManager.clear());
 		LOG.info("Minegicka III Reborn loaded");
 	}
 
+	/** Ticks between two staff abilities fired through the network (one per right click on a real client). */
+	static final int ABILITY_COOLDOWN = 5;
+	private static final java.util.Map<java.util.UUID, Long> LAST_ABILITY = new java.util.HashMap<>();
+
+	/**
+	 * Handles a cast packet. The client is not trusted: spells need a staff in the main hand, the queue is capped to
+	 * the staff's size, weapon casts can't be requested and staff abilities are rate limited.
+	 */
 	private static void onCast(ServerPlayer player, CastPayload msg) {
 		if (msg.action() == CastPayload.STOP) {
 			SpellManager.stop(player);
 			return;
 		}
-		List<Element> els = new ArrayList<>();
-		for (byte b : msg.elements()) {
-			Element e = Element.byId(b);
-			if (e != null && els.size() < 16) els.add(e);
-		}
+		if (!(player.getMainHandItem().getItem() instanceof ro.avi.minegicka3.item.StaffItem staff)) return;
+		List<Element> els = sanitize(msg.elements(), staff.stats.queue());
 		if (msg.action() == CastPayload.MAGICK) {
 			ro.avi.minegicka3.magick.Magick m = ro.avi.minegicka3.magick.Magick.match(els);
 			if (m != null) {
@@ -67,14 +75,39 @@ public class Minegicka implements ModInitializer {
 			}
 			return;
 		}
-		if (msg.action() == CastPayload.START && els.isEmpty()) {
-			if (player.getMainHandItem().getItem() instanceof ro.avi.minegicka3.item.StaffItem staff) staff.triggerAbility(player.level(), player);
+		if (msg.action() == CastPayload.START && msg.elements().length == 0) {
+			long now = player.level().getGameTime();
+			Long last = LAST_ABILITY.get(player.getUUID());
+			if (last != null && now - last < ABILITY_COOLDOWN && now >= last) return;
+			LAST_ABILITY.put(player.getUUID(), now);
+			staff.triggerAbility(player.level(), player);
 			return;
 		}
-		if (msg.action() == CastPayload.START) {
+		if (msg.action() == CastPayload.START && !els.isEmpty()) {
 			CastType[] types = CastType.values();
-			CastType ct = msg.castType() >= 0 && msg.castType() < types.length ? types[msg.castType()] : CastType.SINGLE;
+			int t = msg.castType();
+			// WEAPON is only used internally (imbued weapons), never asked for by a client
+			CastType ct = t >= 0 && t < types.length && types[t] != CastType.WEAPON ? types[t] : CastType.SINGLE;
 			SpellManager.start(player, els, ct);
 		}
+	}
+
+	/**
+	 * Checks the queue a client sent. It is the client's final queue, not its key presses, so it can't be replayed
+	 * through the queue rules (a break-down leaves pairs such as WATER next to LIGHTNING). Only what holds for every
+	 * real queue is enforced: known elements, at most max of them, at most one Shield.
+	 */
+	public static List<Element> sanitize(byte[] sent, int max) {
+		List<Element> els = new ArrayList<>();
+		for (int i = 0; i < sent.length && els.size() < max; i++) {
+			Element e = Element.byId(sent[i]);
+			if (e == null || e == Element.SHIELD && els.contains(Element.SHIELD)) continue;
+			els.add(e);
+		}
+		return els;
+	}
+
+	public static void forget(ServerPlayer player) {
+		LAST_ABILITY.remove(player.getUUID());
 	}
 }

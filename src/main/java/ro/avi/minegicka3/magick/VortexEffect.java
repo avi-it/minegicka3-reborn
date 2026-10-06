@@ -63,20 +63,33 @@ public class VortexEffect implements SpellEffect {
 		return true;
 	}
 
+	/** Block offsets of each shell (a - 1 < distance <= a), built once per radius instead of scanning a cube. */
+	private static final java.util.Map<Integer, java.util.List<BlockPos>> SHELLS = new java.util.concurrent.ConcurrentHashMap<>();
+
+	public static java.util.List<BlockPos> shell(int a) {
+		return SHELLS.computeIfAbsent(a, r -> {
+			java.util.List<BlockPos> out = new java.util.ArrayList<>();
+			for (BlockPos p : BlockPos.betweenClosed(new BlockPos(-r, -r, -r), new BlockPos(r, r, r))) {
+				double dist = Math.sqrt(p.distSqr(BlockPos.ZERO));
+				if (dist <= r && dist > r - 1) out.add(p.immutable());
+			}
+			return java.util.List.copyOf(out);
+		});
+	}
+
 	private void eat() {
 		BlockPos center = BlockPos.containing(c);
 		for (int a = 0; a < range; a++) {
 			boolean took = false;
-			for (BlockPos p : BlockPos.betweenClosed(center.offset(-a, -a, -a), center.offset(a, a, a))) {
-				double dist = Math.sqrt(p.distSqr(center));
-				if (dist > a || dist <= a - 1) continue;
+			for (BlockPos off : shell(a)) {
+				BlockPos p = center.offset(off);
 				BlockState st = level.getBlockState(p);
 				if (st.isAir() || !st.getFluidState().isEmpty() || st.getDestroySpeed(level, p) < 0 || level.getBlockEntity(p) != null) continue;
 				if (a <= 3) {
 					level.removeBlock(p, false);
 					took = true;
 				} else if (level.getRandom().nextInt(a + 1) == 0) {
-					if (level.getRandom().nextInt(4) == 0) FallingBlockEntity.fall(level, p.immutable(), st);
+					if (level.getRandom().nextInt(4) == 0) FallingBlockEntity.fall(level, p, st);
 					else level.removeBlock(p, false);
 					took = true;
 				}
