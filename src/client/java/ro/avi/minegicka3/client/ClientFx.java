@@ -84,25 +84,26 @@ public final class ClientFx {
 		List<Vec3> pts = p.points();
 		List<Integer> colors = p.colors();
 		int budget = 260;
-		for (int i = 0; i + 1 < pts.size(); i += 2) {
+		for (int i = 0; i + 1 < pts.size() && budget > 0; i += 2) {
 			Vec3 a = pts.get(i), b = pts.get(i + 1);
 			if (p.kind() == LineFxPayload.LIGHTNING) {
-				budget -= arc(level, rnd, a, b, colors, true);
+				budget -= arc(level, rnd, a, b, colors, budget > 120);
 			} else if (p.kind() == LineFxPayload.NOVA) {
 				budget -= ring(level, rnd, a, b, colors, budget);
 			} else {
 				// a beam from the local player's own staff starts a bit ahead so it doesn't cover the screen
 				double start = pts.size() == 2 && near(a) ? Math.min(1.5, a.distanceTo(b)) : 0;
-				budget -= beam(level, rnd, a, b, colors, start, budget);
+				budget -= beam(level, rnd, a, b, colors, start, budget, i + 2 >= pts.size());
 			}
 		}
 	}
 
 	/**
 	 * A beam is a bright, almost white core wrapped in two strands of the element colours that twist along it,
-	 * with a flare where it hits.
+	 * with a flare where it hits (only on the last segment, flare = true).
 	 */
-	private static int beam(ClientLevel level, RandomSource rnd, Vec3 a, Vec3 b, List<Integer> colors, double start, int budget) {
+	private static int beam(ClientLevel level, RandomSource rnd, Vec3 a, Vec3 b, List<Integer> colors, double start, int budget,
+		boolean flare) {
 		double len = a.distanceTo(b);
 		if (len < 1e-3) return 0;
 		Vec3 axis = b.subtract(a).scale(1 / len);
@@ -123,6 +124,7 @@ public final class ClientFx {
 			}
 			n += 3;
 		}
+		if (!flare) return n;
 		level.addParticle(ParticleTypes.END_ROD, b.x, b.y, b.z, 0, 0.02, 0);
 		for (int k = 0; k < 3; k++) {
 			level.addParticle(new DustParticleOptions(colors.get(rnd.nextInt(colors.size())), 1.4f),
@@ -150,7 +152,10 @@ public final class ClientFx {
 		return pl != null && pl.getEyePosition().distanceToSqr(a) < 1;
 	}
 
-	/** A jagged bolt from a to b (midpoint displacement) with a white-hot core, coloured glow and a side fork or two. */
+	/**
+	 * A jagged bolt from a to b (midpoint displacement) with a white-hot core, coloured glow and, when forks is set,
+	 * a side fork or two. Returns the particles spawned; the caller stops drawing segments once its budget runs out.
+	 */
 	private static int arc(ClientLevel level, RandomSource rnd, Vec3 a, Vec3 b, List<Integer> colors, boolean forks) {
 		List<Vec3> path = new ArrayList<>(List.of(a, b));
 		double off = a.distanceTo(b) * 0.15;
@@ -188,7 +193,7 @@ public final class ClientFx {
 			}
 		}
 		level.addParticle(ParticleTypes.ELECTRIC_SPARK, b.x, b.y, b.z, 0, 0.05, 0);
-		return n;
+		return n + 1;
 	}
 
 	private static int pick(RandomSource rnd, int... cols) {
