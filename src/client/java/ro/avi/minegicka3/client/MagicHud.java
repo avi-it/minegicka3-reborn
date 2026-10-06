@@ -38,9 +38,11 @@ public class MagicHud implements HudElement {
 		int left = right - W;
 		int y = g.guiHeight() - MARGIN;
 
-		// Hotkey grid 4x2 (bottom-most)
+		// Hotkey grid 4x2 (bottom-most) on a dark plate
 		int gx = left + (W - KEY * 4) / 2;
 		y -= KEY * 2;
+		g.fill(gx - 2, y - 2, gx + KEY * 4 + 2, y + KEY * 2 + 2, argb(0.45f * f, 0x0C0A12));
+		g.fill(gx - 2, y - 2, gx + KEY * 4 + 2, y - 1, argb(0.6f * f, 0x8A7040));
 		int i = 0;
 		for (Map.Entry<Element, KeyMapping> en : MinegickaClient.ELEMENT_KEYS.entrySet()) {
 			int x = gx + (i % 4) * KEY, yy = y + (i / 4) * KEY;
@@ -58,13 +60,15 @@ public class MagicHud implements HudElement {
 		int bx = left + (W - 80) / 2;
 		float ba = 0.4f + 0.6f * f;
 		double rate = Mana.get(p) / Mana.max(p);
-		g.fill(bx, y, bx + 80, y + 5, argb(ba, 0x333333));
-		g.fill(bx + 1, y + 1, bx + 79, y + 4, argb(ba, 0x000000));
+		g.fill(bx, y, bx + 80, y + 5, argb(ba, 0x6A5530));
+		g.fill(bx + 1, y + 1, bx + 79, y + 4, argb(ba, 0x08060E));
 		int fw = (int)Math.round(78 * rate);
 		int cx = bx + 40;
-		int col = Mana.get(p) < MinegickaClient.MIN_MANA ? 0xCCCCCC
-			: rgb(0.7, 0.7 * Math.max(0, 0.7 - rate), 0.8 * rate);
+		boolean low = Mana.get(p) < MinegickaClient.MIN_MANA;
+		// deep blue when full, shifting to violet as it drains; grey when too low to cast
+		int col = low ? 0x8A8A8A : rgb(0.35 + 0.35 * (1 - rate), 0.3 + 0.35 * rate, 0.95);
 		g.fill(cx - fw / 2, y + 1, cx - fw / 2 + fw, y + 4, argb(ba, col));
+		g.fill(cx - fw / 2, y + 1, cx - fw / 2 + fw, y + 2, argb(ba * 0.6f, 0xFFFFFF)); // sheen
 		if (staff) {
 			String t = (int)Math.ceil(Mana.get(p)) + "/" + (int)Math.ceil(Mana.max(p));
 			g.text(font, t, cx - font.width(t) / 2, y - 9, argb(1f, 0xFFFFFF), true);
