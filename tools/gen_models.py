@@ -142,10 +142,12 @@ GEM_DISPLAY = {
     "firstperson_lefthand": {"rotation": [0, -30, 0], "translation": [1, 3, 0], "scale": [0.35, 0.35, 0.35]},
 }
 HAT_DISPLAY = {
-    "gui": {"rotation": [25, 30, 0], "translation": [0, -1, 0], "scale": [0.8, 0.8, 0.8]},
+    "gui": {"rotation": [25, 30, 0], "translation": [0, -1, 0], "scale": [0.7, 0.7, 0.7]},
     "ground": {"rotation": [0, 0, 0], "translation": [0, 1, 0], "scale": [0.5, 0.5, 0.5]},
     "fixed": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [0.8, 0.8, 0.8]},
-    "head": {"rotation": [0, 0, 0], "translation": [0, 7, 0], "scale": [1.25, 1.25, 1.25]},
+    # Worn hats are drawn centred on the head at 0.625 scale, so the head's top is 6.4 model px above the middle.
+    # The brim (y 0) goes 12.8 px up, i.e. one skin pixel below the head's top, and the crown wraps the head.
+    "head": {"rotation": [0, 0, 0], "translation": [0, 12.8, 0], "scale": [1, 1, 1]},
     "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 2, 1], "scale": [0.5, 0.5, 0.5]},
     "thirdperson_lefthand": {"rotation": [0, 0, 0], "translation": [0, 2, 1], "scale": [0.5, 0.5, 0.5]},
     "firstperson_righthand": {"rotation": [0, 30, 0], "translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]},
@@ -277,10 +279,10 @@ def gems():
 def hats():
     def hat(name, body, band, star):
         m = Model(offset=(8, 0, 8))
-        m.box((0, 0.5, 0), (15, 1, 15), darker(body, 0.15), (0, 0, 0))    # wide brim
-        m.box((0, 0.5, 0), (13.5, 1, 13.5), darker(body, 0.15), (0, 45, 0))
-        # cone: tiers shrink and drift backwards, the tip flops over
-        y, w, dz = 1.0, 9.0, 0.0
+        m.box((0, 0.5, 0), (17, 1, 17), darker(body, 0.15), (0, 0, 0))    # wide brim
+        m.box((0, 0.5, 0), (15.3, 1, 15.3), darker(body, 0.15), (0, 45, 0))
+        # cone: tiers shrink and drift backwards, the tip flops over; the first tier is a bit wider than the head
+        y, w, dz = 1.0, 13.6, 0.0
         tiers = []
         for i in range(6):
             h = 2.2
@@ -288,8 +290,9 @@ def hats():
             m.box((0, y + h / 2, dz), (w, h, w), body if i % 2 == 0 else lighter(body, 0.06))
             y, w, dz = y + h, w * 0.78, dz + 0.25 * i  # drift backwards (+z) as it narrows
         m.polyline([(0, y, dz), (0, y + 1.6, dz + 0.6), (0, y + 2.2, dz + 2.4)], 1.1, body)
-        m.box((0, 2.2, 0), (9.4, 1.4, 9.4), band)                           # hat band
-        m.box((0, 2.2, -4.75), (1.6, 1.6, 0.4), star)                       # buckle on the front (north)
+        bw = tiers[0][1] + 0.4
+        m.box((0, 2.2, 0), (bw, 1.4, bw), band)                             # hat band
+        m.box((0, 2.2, -bw / 2 - 0.2), (1.6, 1.6, 0.4), star)               # buckle on the front (north)
         ey, ew, edz = tiers[2]
         m.box((0, ey, edz - ew / 2 - 0.1), (1.3, 1.3, 0.3), star, (0, 0, 45))  # star emblem
         m.write(name, HAT_DISPLAY)
